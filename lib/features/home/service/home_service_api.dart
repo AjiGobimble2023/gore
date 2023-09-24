@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/helper/api_helper.dart';
 import '../../../core/util/app_exceptions.dart';
 
@@ -22,39 +24,16 @@ class HomeServiceAPI {
   }
 
   Future<dynamic> fetchCarousel() async {
-    // final response = await _apiHelper.requestPost(
-    //   jwt: false,
-    //   pathUrl: '/carousel',
-    // );
-    final response = {
-      "data": [
-        {
-          "nama_file":
-              "https://1.bp.blogspot.com/-lTJvQzNtTRw/XMTxH9UGFCI/AAAAAAAAPFQ/iVfu94tODOQ_AVuG1m-zN1Hl4NcipaCIACLcBGAs/s1600/event.png",
-          "keterangan": "Gambar Carousel 1",
-          "link": "https://www.example.com/carousel1",
-          "status": "aktif",
-          "tanggal": "2023-08-30"
-        },
-        {
-          "nama_file":
-              "https://www.lalamove.com/hubfs/event%20organizer%20%283%29.jpg",
-          "keterangan": "Gambar Carousel 2",
-          "link": "https://www.example.com/carousel2",
-          "status": "aktif",
-          "tanggal": "2023-08-31"
-        },
-        {
-          "nama_file":
-              "https://1.bp.blogspot.com/-lTJvQzNtTRw/XMTxH9UGFCI/AAAAAAAAPFQ/iVfu94tODOQ_AVuG1m-zN1Hl4NcipaCIACLcBGAs/s1600/event.png",
-          "keterangan": "Gambar Carousel 3",
-          "link": "https://www.example.com/carousel3",
-          "status": "nonaktif",
-          "tanggal": "2023-09-01"
-        }
-      ]
-    };
-
-    return response['data'];
+    try {
+      // Buat instance Dio
+      Dio dio = Dio();
+      final response =
+          await dio.get('http://192.168.20.250:4002/api/v1/data/carousel');
+      print(response.data);
+      return response.data['data'];
+    } catch (e) {
+      // Tangani kesalahan jika terjadi
+      throw Exception('Terjadi kesalahan: $e');
+    }
   }
 }

@@ -1232,7 +1232,7 @@ class _SoalBasicScreenState extends State<SoalBasicScreen> {
           isBolehLihatKunci:
               _isSudahDikumpulkan() && widget.idJenisProduk != 65,
           onClickPilihJawaban: _isSudahDikumpulkan()
-              ? null
+              ? null 
               : (pilihanJawaban) async => await _setTempJawaban(pilihanJawaban),
         );
       case 'PBK':

@@ -15,7 +15,8 @@ class PembayaranServiceAPI {
     );
 
     if (kDebugMode) {
-      logger.log('PEMBAYARAN_SERVICE_API-FetchPembayaran: response >> $response');
+      logger
+          .log('PEMBAYARAN_SERVICE_API-FetchPembayaran: response >> $response');
     }
 
     if (!response['status']) throw DataException(message: response['message']);
@@ -30,7 +31,8 @@ class PembayaranServiceAPI {
     );
 
     if (kDebugMode) {
-      logger.log('PEMBAYARAN_SERVICE_API-FetchDetailPembayaran: response >> $response');
+      logger.log(
+          'PEMBAYARAN_SERVICE_API-FetchDetailPembayaran: response >> $response');
     }
 
     if (!response['status']) throw DataException(message: response['message']);

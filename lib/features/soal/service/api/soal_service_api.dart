@@ -66,16 +66,16 @@ class SoalServiceAPI {
     return response['data'];
   }
 
-  // Future<dynamic> fetchVideoSolusi({required String idVideo}) async {
-  //   final response = await _apiHelper.requestPost(
-  //     pathUrl: '/solusi/getvideo',
-  //     bodyParams: {'idvideo': idVideo},
-  //   );
-  //
-  //   if (!response['status']) throw DataException(message: response['message']);
-  //
-  //   return response['data'];
-  // }
+  Future<dynamic> fetchVideoSolusi({required String idVideo}) async {
+    final response = await _apiHelper.requestPost(
+      pathUrl: '/solusi/getvideo',
+      bodyParams: {'idvideo': idVideo},
+    );
+
+    if (!response['status']) throw DataException(message: response['message']);
+
+    return response['data'];
+  }
 
   Future<List<dynamic>> fetchSobatTips({
     required String idSoal,
@@ -111,7 +111,9 @@ class SoalServiceAPI {
       bodyParams: {'jumlahSoal': jumlahSoal},
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'] ?? [];
   }

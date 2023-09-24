@@ -34,19 +34,6 @@ class ProfilePictureProvider with ChangeNotifier {
         _profileUrl[noRegistrasi] == null) {
       return null;
     }
-    if (_profileUrl[noRegistrasi]?.contains('firebasestorage') ?? false) {
-      String url = _profileUrl[noRegistrasi]!;
-
-      int startIndex = url.indexOf('%2F');
-      int endIndex = url.indexOf('.png');
-
-      if (kDebugMode) {
-        logger.log(
-            'TEST Selected Avatar >> ${url.substring(startIndex + 3, endIndex)}');
-      }
-
-      return url.substring(startIndex + 3, endIndex);
-    }
     return null;
   }
 

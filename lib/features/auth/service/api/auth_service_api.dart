@@ -1,6 +1,8 @@
 import 'dart:developer' as logger;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:gokreasi_new/core/config/constant.dart';
 
 import '../../../../core/config/global.dart';
 import '../../../../core/helper/api_helper.dart';
@@ -9,6 +11,7 @@ import '../../../../core/util/app_exceptions.dart';
 /// [AuthServiceApi] merupakan service class penghubung provider dengan request api.
 class AuthServiceApi {
   final _apiHelper = ApiHelper();
+  final dio = Dio();
 
   // Future<bool> checkProfilePicture(
   //     {required String userType, required String noRegistrasi}) async {
@@ -28,15 +31,27 @@ class AuthServiceApi {
       return null;
     }
     logger.log('FETCH IMEI START');
-    try {
-      final response = await _apiHelper.requestPost(
-        jwt: false,
-        pathUrl: '/auth/imei',
-        bodyParams: {'noRegistrasi': noRegistrasi, 'role': siapa},
-      );
-      if (kDebugMode) logger.log('FETCH IMEI: response >> $response');
+    final dio = Dio();
 
-      return (!response['status']) ? null : response['data']?['cImei'];
+    try {
+      final response = await dio.post(
+        "${Constant.baseUrl}/auth/imei",
+        data: {
+          'noRegistrasi': noRegistrasi,
+          'role': siapa,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (kDebugMode) logger.log('FETCH IMEI: response >> ${response.data}');
+
+      return (response.data['meta']['code'] == 200)
+          ? response.data['data']['cImei']
+          : null;
     } catch (e) {
       if (kDebugMode) {
         logger.log('AUTH_SERVICE_API-CatchError: $e');
@@ -72,7 +87,9 @@ class AuthServiceApi {
       logger.log('AUTH_SERVICE_API-ResendOTP: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['waktu'];
   }
@@ -112,7 +129,9 @@ class AuthServiceApi {
           .log('AUTH_SERVICE_API-CekValidasiRegistrasi: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response;
   }
@@ -123,7 +142,7 @@ class AuthServiceApi {
     required String otp,
     required String via,
     required String imei,
-    String? userType,
+    required String userType,
     String? noRegistrasi,
   }) async {
     if (kDebugMode) {
@@ -133,25 +152,29 @@ class AuthServiceApi {
           'params($userPhoneNumber, $otp, $via, $imei, $noRegistrasi, $userType)');
     }
 
-    final response = await _apiHelper.requestPost(
-      jwt: noRegistrasi != null,
-      // pathUrl: '/auth/login',
-      pathUrl: '/login',
-      bodyParams: {
-        'registeredNumber': userPhoneNumber,
-        // 'noHp': userPhoneNumber,
-        'otp': otp,
-        'via': via,
-        'imei': imei,
-        'jenis': userType,
-        'noRegistrasi': noRegistrasi,
-      },
-    );
+    try {
+      final response = await dio.post(
+        'http://192.168.20.248:4001/mobile/v1/login/${userType}', // URL sesuai dengan endpoint login Anda
+        data: {
+          'noHP': userPhoneNumber,
+          'via': via,
+          'imei': imei,
+        },
+      );
 
-    if (kDebugMode) {
-      logger.log('AUTH_SERVICE_API-Login: response >> $response');
+      if (kDebugMode) {
+        logger.log('AUTH_SERVICE_API-Login: response >> ${response.data}');
+      }
+      if (response.data['meta']['code'] != 200) {
+        throw DataException(message: response.data['meta']['message']);
+      }
+
+      return response.data;
+    } catch (e) {
+      // Tangani kesalahan di sini, misalnya:
+      logger.log('AUTH_SERVICE_API-Login: Error >> $e');
+      throw e; // Anda dapat melempar kembali kesalahan jika diperlukan
     }
-    return response;
   }
 
   Future<Map<String, dynamic>> simpanRegistrasi({

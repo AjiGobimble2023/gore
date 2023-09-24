@@ -33,7 +33,6 @@ class JadwalServiceApi {
     if (!response['status']) throw DataException(message: response['message']);
 
     return response['data'];
-    
   }
 
   Future<dynamic> setPresensiSiswa(Map<String, dynamic> dataPresensi) async {

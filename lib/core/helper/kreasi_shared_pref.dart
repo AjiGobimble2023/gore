@@ -202,6 +202,7 @@ class KreasiSharedPref {
       }
       if (user?.isNotEmpty ?? false) {
         gTokenJwt = await getTokenJWT() ?? '';
+        print(user!);
         var userModel = UserModel.fromJson(json.decode(user!));
         gUser = userModel;
         gNoRegistrasi = userModel.noRegistrasi;

@@ -55,19 +55,19 @@ class ApiHelper {
         }
       }
 
-      DateTime expirationDate =
-          JwtDecoder.getExpirationDate(jwtSwitchOrtu ?? gTokenJwt);
-      DateTime today = await gGetServerTime();
-      // Ketika _expirationDate melewati waktu sekarang (_today), maka token JWT harus di refresh.
-      if (kDebugMode) {
-        logger.log('IS JWT EXPIRED >> ${expirationDate.isBefore(today)}');
-      }
-      if (expirationDate.isBefore(today)) {
-        gTokenJwt = await refreshJwtToken(
-            noRegistrasi: gUser?.noRegistrasi ?? gDeviceID,
-            siapa: gUser?.siapa ?? 'No User');
-        KreasiSharedPref().setTokenJWT(gTokenJwt);
-      }
+      // DateTime expirationDate =
+      //     JwtDecoder.getExpirationDate(jwtSwitchOrtu ?? gTokenJwt);
+      // DateTime today = await gGetServerTime();
+      // // Ketika _expirationDate melewati waktu sekarang (_today), maka token JWT harus di refresh.
+      // if (kDebugMode) {
+      //   logger.log('IS JWT EXPIRED >> ${expirationDate.isBefore(today)}');
+      // }
+      // if (expirationDate.isBefore(today)) {
+      //   gTokenJwt = await refreshJwtToken(
+      //       noRegistrasi: gUser?.noRegistrasi ?? gDeviceID,
+      //       siapa: gUser?.siapa ?? 'No User');
+      //   KreasiSharedPref().setTokenJWT(gTokenJwt);
+      // }
     }
     Map<String, String> header = {
       'Accept': 'application/json',

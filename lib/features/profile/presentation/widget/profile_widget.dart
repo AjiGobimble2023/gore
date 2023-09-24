@@ -41,7 +41,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
               ? _authOtpProvider.userData?.nomorHpOrtu
               : _authOtpProvider.userData?.nomorHp) ??
           '',
-      userTypeRefresh: _authOtpProvider.userData?.siapa,
+      userTypeRefresh: _authOtpProvider.userData!.siapa,
       noRegistrasiRefresh: _authOtpProvider.userData?.noRegistrasi,
     );
     await KreasiSharedPref().simpanDataLokal();

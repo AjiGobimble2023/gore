@@ -3,6 +3,7 @@ library config.globals;
 import 'dart:io';
 import 'dart:developer' as logger show log;
 
+import 'package:dio/dio.dart';
 import 'package:ntp/ntp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flash/flash.dart';
@@ -15,6 +16,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:unique_identifier/unique_identifier.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/config/constant.dart';
 
 import 'enum.dart';
 import 'theme.dart';
@@ -34,15 +36,6 @@ String gDeviceID = '';
 late String gKreasiVersion;
 DefaultFlashController? gPreviousBottomDialog;
 
-// User Tester OTP statis
-const List<String> gAkunTester = [
-  // Siswa
-  '08123456789',
-  // ORTU
-  '08987654321',
-];
-
-const String gStaticImei = 'Isi-Static-Imei-Device';
 
 UserModel? gUser;
 int? gOffsetServerTime;
@@ -121,25 +114,23 @@ Future<DateTime> gGetServerTime() async {
   await gSetServerTimeOffset();
   final DateTime now = DateTime.now();
   DateTime serverTime = await NTP.now(lookUpAddress: 'time.apple.com').timeout(
-        timeout,
-        onTimeout: () async =>
-            await NTP.now(lookUpAddress: 'pool.ntp.org').timeout(
-                  timeout,
-                  onTimeout: () async => await NTP.now().timeout(
-                    timeout,
-                    onTimeout: () async {
-                      final response = await ApiHelper().requestPost(
-                          jwt: false, pathUrl: '/data/waktuserver');
-
-                      if (response['status'] ?? false) {
-                        return DataFormatter.stringToDate(response['data']);
-                      }
-                      return DateTime.now()
-                          .add(Duration(milliseconds: gOffsetServerTime!));
-                    },
-                  ),
-                ),
-      );
+    timeout,
+    onTimeout: () async {
+      try {
+        final response = await Dio().get('${Constant.baseUrl}/data/waktuserver');
+        if (response.statusCode == 200) {
+          // Status kode adalah 200, maka kita dapat mengambil waktu server dari respons
+          return DataFormatter.stringToDate(response.data['data']);
+        } else {
+           return DateTime.now().add(Duration(milliseconds: gOffsetServerTime!));
+        }
+      } catch (error) {
+        // Tangani kesalahan saat melakukan permintaan ke '/data/waktuserver'
+      }
+      // Kembalikan waktu server default jika ada kesalahan atau status kode bukan 200
+      return DateTime.now().add(Duration(milliseconds: gOffsetServerTime!));
+    },
+  );
 
   if (kDebugMode) {
     logger.log('GLOBAL-GetServerTime: $serverTime | $gOffsetServerTime |');

@@ -22,21 +22,21 @@ class JurusanModel extends Jurusan {
   factory JurusanModel.fromJson(Map<String, dynamic> json) {
     if (kDebugMode) {
       logger.log(
-          'JURUSAN_MODEL-FromJson: ${json['idPTN'] is String} || ${json['idJurusan'] is String}');
+          'JURUSAN_MODEL-FromJson: ${json['id_universitas'] is String} || ${json['id_jurusan'] is String}');
     }
 
     return JurusanModel(
-      idPTN: json['idPTN'],
-      idJurusan: json['idJurusan'],
-      namaJurusan: json['namaJurusan'],
-      kelompok: json['kelompok'],
-      rumpun: json['rumpun'],
+      idPTN: json['id_universitas'],
+      idJurusan: json['id_jurusan'],
+      namaJurusan: json['nama_jurusan'],
+      kelompok: json['kelompok_jurusan'],
+      rumpun: json['rumpun_jurusan'],
       peminat: json['info']?['peminat'] ?? json['peminat'] ?? [],
       tampung: json['info']?['tampung'] ?? json['tampung'] ?? [],
-      passGrade: json['passgrade'],
-      lintas: (json['lintas'] == 'Y') ? true : false,
+      passGrade: json['passing_grade'].toString(),
+      lintas: json['lintas_jurusan'],
       deskripsi: json['deskripsi'],
-      lapanganPekerjaan: json['lapker'],
+      lapanganPekerjaan: json['lapangan_kerja'],
     );
   }
 }

@@ -12,25 +12,25 @@ class LaporanServiceAPI {
     required String noRegistrasi,
     required String userType,
   }) async {
-      if (kDebugMode) {
-        logger.log(
-            'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: START with params($noRegistrasi, $userType)');
-      }
+    if (kDebugMode) {
+      logger.log(
+          'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: START with params($noRegistrasi, $userType)');
+    }
 
-      final response = await _apiHelper.requestPost(
-        pathUrl: '/vak',
-        bodyParams: {'nis': noRegistrasi, 'jenis': userType},
-      );
+    final response = await _apiHelper.requestPost(
+      pathUrl: '/vak',
+      bodyParams: {'nis': noRegistrasi, 'jenis': userType},
+    );
 
-      if (kDebugMode) {
-        logger.log(
-            'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: response >> $response');
-      }
+    if (kDebugMode) {
+      logger.log(
+          'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: response >> $response');
+    }
 
-      if (!response['status'] &&
-          !response['message'].contains('belum mengerjakan')) {
-        throw DataException(message: response['message']);
-      }
-      return response['data'];
+    if (response['meta']['code'] != 200 &&
+        !response['meta']['message'].contains('belum mengerjakan')) {
+      throw DataException(message: response['message']);
+    }
+    return response['data'];
   }
 }

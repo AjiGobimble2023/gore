@@ -15,12 +15,14 @@ class BeritaServiceApi {
       bodyParams: {'jenis': userType},
     );
 
-    if (kDebugMode && !response['status']) {
+    if (kDebugMode && response['meta']['code'] != 200) {
       logger.log('BERITA_SERVICE_API-FetchBerita: response >> '
           '$response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'];
   }
@@ -32,12 +34,12 @@ class BeritaServiceApi {
       bodyParams: {'jenis': userType},
     );
 
-    if (kDebugMode && !response['status']) {
+    if (kDebugMode && response['meta']['code'] != 200) {
       logger.log('BERITA_SERVICE_API-FetchBeritaPopUp: response >> '
           '$response');
     }
 
-    if (response['status']) {
+    if (response['meta']['code'] != 200) {
       throw DataException(message: response['message']);
     }
     return response['data'];
@@ -49,6 +51,8 @@ class BeritaServiceApi {
       bodyParams: {"idBerita": idBerita},
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (!response['meta']['code'] == 200) {
+      throw DataException(message: response['message']);
+    }
   }
 }

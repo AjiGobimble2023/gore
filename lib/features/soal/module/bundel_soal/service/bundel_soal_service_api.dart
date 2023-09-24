@@ -34,10 +34,10 @@ class BundelSoalServiceApi {
           'BUNDEL_SOAL_SERVICE_API-FetchDaftarBundel: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
     return response['data'];
-
   }
 
   Future<List<dynamic>> fetchDaftarBabSubBab(
@@ -45,7 +45,9 @@ class BundelSoalServiceApi {
     final Map<String, dynamic> response = await _apiHelper.requestPost(
         jwt: isJWT, pathUrl: '/bukusoal/bab/$idBundel');
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'];
   }
@@ -67,7 +69,9 @@ class BundelSoalServiceApi {
       bodyParams: (opsiUrut == OpsiUrut.bab) ? {'kodeBab': kodeBab} : null,
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'] ?? [];
   }

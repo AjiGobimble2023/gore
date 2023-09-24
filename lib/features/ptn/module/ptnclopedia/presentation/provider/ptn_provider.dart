@@ -399,35 +399,35 @@ class PtnProvider extends ChangeNotifier {
       if (riwayat.isEmpty || isRefresh || isOrtu) {
         final response = await _apiService.fetchKampusImpianPilihan(
             noRegistrasi: noRegistrasi!);
-
+        print(response);
         if (response['data'] == null && !fromHome) {
           gShowTopFlash(gNavigatorKey.currentState!.context,
               'Data kampus impian kamu tidak ditemukan');
           return;
         }
 
-        if (response['status'] && response['data'] != null) {
-          if (response['data']['pilihan1'] != null) {
+        if (response['meta']['code'] == 200 && response['data'] != null) {
+          if (response['data']['pilihan'][0] != null) {
             // Store Pilihan 1 ke HiveBox
             await HiveHelper.saveKampusImpianPilihan(
               pilihanKe: 1,
               kampusPilihan:
-                  KampusImpian.fromJson(response['data']['pilihan1']),
+                  KampusImpian.fromJson(response['data']['pilihan'][0]),
             );
           }
-          if (response['data']['pilihan2'] != null) {
+          if (response['data']['pilihan'][1] != null) {
             // Store Pilihan 2 ke HiveBox
             await HiveHelper.saveKampusImpianPilihan(
               pilihanKe: 2,
               kampusPilihan:
-                  KampusImpian.fromJson(response['data']['pilihan2']),
+                  KampusImpian.fromJson(response['data']['pilihan'][1]),
             );
           }
 
-          if (response['data']['history'] != null) {
+          if (response['data']['historyPilihan'] != null) {
             List<KampusImpian> riwayatPilihan = [];
 
-            for (var data in response['data']['history']) {
+            for (var data in response['data']['historyPilihan']) {
               riwayatPilihan.add(KampusImpian.fromJson(data));
             }
 
@@ -441,9 +441,10 @@ class PtnProvider extends ChangeNotifier {
           // ignore: use_build_context_synchronously
           gShowTopFlash(
             gNavigatorKey.currentState!.context,
-            response['message'],
-            dialogType:
-                response['status'] ? DialogType.success : DialogType.error,
+            response['meta']['message'],
+            dialogType: response['meta']['status'] == 200
+                ? DialogType.success
+                : DialogType.error,
           );
         }
       }

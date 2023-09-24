@@ -169,6 +169,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
       Map<String, dynamic> loginResponse = await _authOtpProvider.login(
         otp: otp,
+        userTypeRefresh: _pilihanRole.value.name,
         nomorHp: DataFormatter.formatPhoneNumber(
           phoneNumber: _noHpController.text,
         ),
@@ -181,7 +182,6 @@ class _AuthScreenState extends State<AuthScreen> {
         logger.log(
             'AUTH_SCREEN-ON_CLICK_MASUK: Request Login Response >> $loginResponse');
       }
-
       completer.complete();
       if (!loginResponse['status']) {
         return;
@@ -368,6 +368,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
           await _authOtpProvider.login(
             otp: otp,
+            userTypeRefresh: _pilihanRole.value.toString(),
             nomorHp: _noHpController.text,
           );
           await KreasiSharedPref().simpanDataLokal();
@@ -484,6 +485,7 @@ class _AuthScreenState extends State<AuthScreen> {
               child: LoginFormWidget(
                 key: const Key('Login-Form-Widget'),
                 nomorHandphoneTextController: _noHpController,
+                pilihanRoleController: _pilihanRole,
               ),
             )
           : Form(
@@ -520,7 +522,7 @@ class _AuthScreenState extends State<AuthScreen> {
       width: double.infinity,
       height: (context.isMobile) ? context.dp(62) : context.dp(32),
       clipBehavior: Clip.hardEdge,
-      margin: EdgeInsets.symmetric(horizontal: context.dp(30)),
+      margin: EdgeInsets.symmetric(horizontal: context.dp(102.5)),
       decoration: BoxDecoration(
         color: context.primaryColor,
         borderRadius: (context.isMobile)
@@ -583,27 +585,27 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              heightFactor: context.dp(62),
-              widthFactor: buttonWidth,
-              child: TextButton(
-                onPressed: () => _onClickedDaftar(context),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    vertical:
-                        (context.isMobile) ? context.dp(16) : context.dp(10),
-                    horizontal:
-                        (context.isMobile) ? context.dp(40) : context.dp(24),
-                  ),
-                ),
-                child: Text(
-                  'Daftar',
-                  style: context.text.headlineSmall
-                      ?.copyWith(fontSize: (context.isMobile) ? 20 : 17),
-                ),
-              ),
-            )
+            // Align(
+            //   alignment: Alignment.centerRight,
+            //   heightFactor: context.dp(62),
+            //   widthFactor: buttonWidth,
+            //   child: TextButton(
+            //     onPressed: () => _onClickedDaftar(context),
+            //     style: TextButton.styleFrom(
+            //       padding: EdgeInsets.symmetric(
+            //         vertical:
+            //             (context.isMobile) ? context.dp(16) : context.dp(10),
+            //         horizontal:
+            //             (context.isMobile) ? context.dp(40) : context.dp(24),
+            //       ),
+            //     ),
+            //     child: Text(
+            //       'Daftar',
+            //       style: context.text.headlineSmall
+            //           ?.copyWith(fontSize: (context.isMobile) ? 20 : 17),
+            //     ),
+            //   ),
+            // )
           ],
         );
       }),

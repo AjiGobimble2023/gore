@@ -175,7 +175,8 @@ class LeaderboardProvider extends DisposableProvider {
       }
 
       _pesan = response['data']['pesan'];
-      _pesanError = response['status'] ? null : response['message'];
+      _pesanError =
+          response['meta']['code'] == 200 ? null : response['meta']['message'];
 
       if (dataRanking != null) {
         _setLeaderboardRank(dataRanking, getKeyType(tipeJuara));
@@ -237,7 +238,6 @@ class LeaderboardProvider extends DisposableProvider {
         idGedung: idGedung,
         tahunAjaran: tahunAjaran,
       );
-      
 
       if (kDebugMode) {
         logger.log(

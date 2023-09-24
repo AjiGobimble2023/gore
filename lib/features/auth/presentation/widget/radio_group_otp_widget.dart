@@ -46,6 +46,7 @@ class RadioGroupOtpWidget extends StatelessWidget {
             valueListenable: auth.otpVia,
             builder: (context, otpVia, _) {
               return Row(children: [
+                const Spacer(),
                 Transform.scale(
                   scale: (!context.isMobile) ? 1.3 : 1,
                   child: Radio<OtpVia>(
@@ -56,15 +57,16 @@ class RadioGroupOtpWidget extends StatelessWidget {
                 ),
                 _label(context, 'Email'),
                 const Spacer(),
-                Transform.scale(
-                  scale: (!context.isMobile) ? 1.3 : 1,
-                  child: Radio<OtpVia>(
-                    value: OtpVia.sms,
-                    groupValue: otpVia,
-                    onChanged: (sms) => auth.otpVia.value = sms!,
-                  ),
-                ),
-                _label(context, 'SMS'),
+                // const Spacer(),
+                // Transform.scale(
+                //   scale: (!context.isMobile) ? 1.3 : 1,
+                //   child: Radio<OtpVia>(
+                //     value: OtpVia.sms,
+                //     groupValue: otpVia,
+                //     onChanged: (sms) => auth.otpVia.value = sms!,
+                //   ),
+                // ),
+                // _label(context, 'SMS'),
                 const Spacer(),
                 Transform.scale(
                   scale: (!context.isMobile) ? 1.3 : 1,

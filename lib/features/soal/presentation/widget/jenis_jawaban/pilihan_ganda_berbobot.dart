@@ -85,6 +85,7 @@ class _PilihanGandaBerbobotState extends State<PilihanGandaBerbobot> {
                         (_selectedOpsi.value == opsi) ? '' : opsi;
                     if (widget.onClickPilihJawaban != null) {
                       widget.onClickPilihJawaban!(_selectedOpsi.value);
+                      print('pilih jawaban');
                     }
                   }
                 : null,

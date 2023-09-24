@@ -1,5 +1,6 @@
 import 'dart:developer' as logger show log;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../../../../../core/helper/api_helper.dart';
@@ -7,40 +8,28 @@ import '../../../../../../../core/util/app_exceptions.dart';
 
 class PtnServiceApi {
   final ApiHelper _apiHelper = ApiHelper();
+  final dio = Dio();
 
   Future<dynamic> fetchUniversitas() async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/ptn/universitas',
-    );
-
-    if (kDebugMode) {
-      logger.log('PTN_SERVICE_API-FetchPTN: response >> $response');
+    try {
+      final response =
+          await Dio().get('http://192.168.20.250:4005/api/v1/universitas');
+      return response.data['data'];
+    } catch (error) {
+      throw error;
     }
-
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
   }
 
   Future<dynamic> fetchJurusan({
     required int idPtn,
   }) async {
-    if (kDebugMode) {
-      logger.log('PTN_SERVICE_API-FetchPTN: START with params($idPtn)');
+    try {
+      final response = await Dio()
+          .get('http://192.168.20.250:4005/api/v1/universitas/${idPtn}');
+      return response.data['data'];
+    } catch (error) {
+      throw error;
     }
-
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/ptn/jurusan',
-      bodyParams: {'idPtn': idPtn},
-    );
-
-    if (kDebugMode) {
-      logger.log('PTN_SERVICE_API-FetchPTN: response >> $response');
-    }
-
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
   }
 
   Future<dynamic> fetchDetailJurusan({
@@ -51,18 +40,13 @@ class PtnServiceApi {
           'PTN_SERVICE_API-FetchDetailJurusan: START with params($idJurusan)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/ptn/jurusan/detail',
-      bodyParams: {'idJurusan': idJurusan},
-    );
-
-    if (kDebugMode) {
-      logger.log('PTN_SERVICE_API-FetchDetailJurusan: response >> $response');
+    try {
+      final response = await Dio().get(
+          'http://192.168.20.250:4005/api/v1/universitas/jurusan//${idJurusan}');
+      return response.data['data'];
+    } catch (error) {
+      throw error;
     }
-
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
   }
 
   Future<dynamic> fetchKampusImpianPilihan({
@@ -73,19 +57,18 @@ class PtnServiceApi {
           'PTN_SERVICE_API-FetchKampusImpianPilihan: START with params($noRegistrasi)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/ptn/pilihan',
-      bodyParams: {'noRegistrasi': noRegistrasi},
-    );
+    final response = await Dio().get(
+        'http://192.168.20.250:4005/api/v1/universitas/jurusan/${noRegistrasi}');
 
     if (kDebugMode) {
       logger.log(
           'PTN_SERVICE_API-FetchKampusImpianPilihan: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200)
+      throw DataException(message: response.data['meta']['message']);
 
-    return response;
+    return response.data;
   }
 
   Future<dynamic> putKampusImpian(
@@ -97,19 +80,13 @@ class PtnServiceApi {
           'START with params($noRegistrasi, $pilihanKe, $idJurusan)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/ptn/pilihan/simpan',
-      bodyParams: {
-        'noRegistrasi': noRegistrasi,
-        'pilihanKe': pilihanKe,
-        'idJurusan': idJurusan,
-      },
-    );
+    final response = await Dio()
+        .get('http://192.168.20.250:4005/api/v1/ptn-pilihan/${noRegistrasi}');
 
     if (kDebugMode) {
       logger.log('PTN_SERVICE_API-UpdateKampusImpian: response >> $response');
     }
 
-    return response;
+    return response.data;
   }
 }

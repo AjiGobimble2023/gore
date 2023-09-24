@@ -15,10 +15,11 @@ class PaketSoalServiceApi {
       pathUrl: '/bukusoal/prasyarat/$kodePaket',
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'] ?? [];
-    
   }
 
   Future<List<dynamic>> fetchDaftarPaketSoal({
@@ -43,7 +44,9 @@ class PaketSoalServiceApi {
           'PAKET_SOAL_SERVICE_API-FetchDaftarPaket: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'];
   }
@@ -53,9 +56,10 @@ class PaketSoalServiceApi {
     final Map<String, dynamic> response = await _apiHelper.requestPost(
         jwt: isJWT, pathUrl: '/bukusoal/soal/paket/$kodePaket');
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'] ?? [];
-    
   }
 }

@@ -336,13 +336,13 @@ class _SoalTimerScreenState extends State<SoalTimerScreen> {
     context.showBlockDialog(dismissCompleter: completer);
 
     if (widget.idJenisProduk == 12 || widget.idJenisProduk == 80) {
+      print('jalan simpan');
       await _tobProvider.kumpulkanJawabanGOA(
         tahunAjaran: _authOtpProvider.tahunAjaran,
         tingkatKelas: _authOtpProvider.userData?.tingkatKelas ??
             _authOtpProvider.tingkatKelas,
         idSekolahKelas: _authOtpProvider.userData?.idSekolahKelas ??
-            _authOtpProvider.idSekolahKelas.value ??
-            '14',
+            _authOtpProvider.idSekolahKelas.value,
         idKota: _authOtpProvider.userData?.idKota ?? '',
         idGedung: _authOtpProvider.userData?.idGedung ?? '',
         noRegistrasi: _authOtpProvider.userData?.noRegistrasi,
@@ -358,8 +358,7 @@ class _SoalTimerScreenState extends State<SoalTimerScreen> {
         tingkatKelas: _authOtpProvider.userData?.tingkatKelas ??
             _authOtpProvider.tingkatKelas,
         idSekolahKelas: _authOtpProvider.userData?.idSekolahKelas ??
-            _authOtpProvider.idSekolahKelas.value ??
-            '14',
+            _authOtpProvider.idSekolahKelas.value,
         noRegistrasi: _authOtpProvider.userData?.noRegistrasi,
         tipeUser: _authOtpProvider.userData?.siapa,
         idJenisProduk: widget.idJenisProduk,
@@ -396,8 +395,7 @@ class _SoalTimerScreenState extends State<SoalTimerScreen> {
     await _tobProvider.toggleRaguRagu(
       tahunAjaran: _authOtpProvider.tahunAjaran,
       idSekolahKelas: _authOtpProvider.userData?.idSekolahKelas ??
-          _authOtpProvider.idSekolahKelas.value ??
-          '14',
+          _authOtpProvider.idSekolahKelas.value,
       noRegistrasi: _authOtpProvider.userData?.noRegistrasi,
       tipeUser: _authOtpProvider.userData?.siapa,
       kodePaket: widget.kodePaket,
@@ -497,8 +495,7 @@ class _SoalTimerScreenState extends State<SoalTimerScreen> {
                     .isAfter(widget.tanggalKedaluwarsaTOB),
             tahunAjaran: _authOtpProvider.tahunAjaran,
             idSekolahKelas: _authOtpProvider.userData?.idSekolahKelas ??
-                _authOtpProvider.idSekolahKelas.value ??
-                '14',
+                _authOtpProvider.idSekolahKelas.value,
             noRegistrasi: _authOtpProvider.userData?.noRegistrasi,
             tipeUser: _authOtpProvider.userData?.siapa,
             isRemedialGOA: widget.isRemedialGOA,
@@ -507,11 +504,11 @@ class _SoalTimerScreenState extends State<SoalTimerScreen> {
   }
 
   Future<void> _setTempJawaban(dynamic jawabanSiswa) async {
+    print('set Jawaban Siswa ${jawabanSiswa.toString()}');
     await _tobProvider.setTempJawaban(
       tahunAjaran: _authOtpProvider.tahunAjaran,
       idSekolahKelas: _authOtpProvider.userData?.idSekolahKelas ??
-          _authOtpProvider.idSekolahKelas.value ??
-          '14',
+          _authOtpProvider.idSekolahKelas.value,
       noRegistrasi: _authOtpProvider.userData?.noRegistrasi,
       tipeUser: _authOtpProvider.userData?.siapa,
       kodePaket: widget.kodePaket,

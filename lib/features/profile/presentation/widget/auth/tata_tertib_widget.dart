@@ -4,11 +4,11 @@ import 'dart:math';
 import 'package:flash/flash_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:gokreasi_new/core/config/constant.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../core/shared/widget/html/custom_html_widget.dart';
 import '../../provider/profile_provider.dart';
-import '../../../../../core/config/constant.dart';
 import '../../../../../core/config/extensions.dart';
 import '../../../../../core/shared/widget/html/widget_from_html.dart';
 
@@ -26,7 +26,6 @@ class TataTertibWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     late final navigator = Navigator.of(context);
     final ScrollController scrollController = ScrollController();
-
     return MediaQuery(
       data:
           MediaQuery.of(context).copyWith(textScaleFactor: context.textScale11),
@@ -46,12 +45,12 @@ class TataTertibWidget extends StatelessWidget {
               selector: (_, data) => data.aturanHtml,
               shouldRebuild: (prev, next) => prev != next,
               builder: (_, aturanSiswa, __) =>
-                  (aturanSiswa ?? "Data Belum ada").contains('table')
+                  (aturanSiswa ?? Constant.defaultAturan).contains('table')
                       ? WidgetFromHtml(
-                          htmlString: aturanSiswa ?? "Data Belum ada",
+                          htmlString: aturanSiswa ?? Constant.defaultAturan,
                         )
                       : CustomHtml(
-                          htmlString: aturanSiswa ?? "Data Belum ada",
+                          htmlString: aturanSiswa ?? Constant.defaultAturan,
                           replaceStyle: {
                             'body': Style(
                               padding: HtmlPaddings.only(

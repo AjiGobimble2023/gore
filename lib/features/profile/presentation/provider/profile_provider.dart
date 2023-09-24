@@ -76,7 +76,6 @@ class ProfileProvider extends DisposableProvider {
     //     break;
     // }
 
-
     // for (var kelompokUjian in Constant.kInitialKelompokUjian.entries) {
     //   bool isOpsiPilihan =
     //       (Constant.kKelompokUjianPilihan[tingkatSekolah] ?? [])
@@ -197,12 +196,9 @@ class ProfileProvider extends DisposableProvider {
             int idKelompokUjian = (id is int) ? id : int.tryParse('$id') ?? -1;
 
             String namaKelompokUjian =
-                opsiPilihan[idKelompokUjian]?['nama'] ??
-                    'Undefined';
+                opsiPilihan[idKelompokUjian]?['nama'] ?? 'Undefined';
 
-            String initial = opsiPilihan[idKelompokUjian]
-                    ?['initial'] ??
-                'N/a';
+            String initial = opsiPilihan[idKelompokUjian]?['initial'] ?? 'N/a';
 
             if (kDebugMode) {
               logger.log('PROFILE_PROVIDER-GetKelompokUjianPilihan: '
@@ -249,7 +245,7 @@ class ProfileProvider extends DisposableProvider {
       if (kDebugMode) {
         logger.log('FatalException-GetKelompokUjianPilihan: $e');
       }
-      gShowTopFlash(gNavigatorKey.currentContext!, gPesanError);
+      // gShowTopFlash(gNavigatorKey.currentContext!, gPesanError);
       if (_isLoadingPilihanKelompokUjian) {
         _isLoadingPilihanKelompokUjian = false;
         notifyListeners();
