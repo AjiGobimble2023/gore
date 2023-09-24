@@ -9,7 +9,6 @@ import 'package:flash/flash_helper.dart';
 import 'package:otp/otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 import '../../../ptn/module/ptnclopedia/entity/kampus_impian.dart';
 import '../../model/produk_dibeli_model.dart';
@@ -248,10 +247,6 @@ class AuthOtpProvider with ChangeNotifier {
 
   Future<String> generateOTP() async {
     try {
-      if (gAkunTester
-          .contains(DataFormatter.formatPhoneNumber(phoneNumber: nomorHp))) {
-        return '886644';
-      }
       final generatedOTP = OTP.generateTOTPCodeString(
         Constant.secretOTP,
         DateTime.now().serverTimeFromOffset.millisecondsSinceEpoch,
@@ -364,10 +359,7 @@ class AuthOtpProvider with ChangeNotifier {
           .showBlockDialog(dismissCompleter: completer);
 
       // Mencoba login terlebih dahulu
-      String? imei = (gAkunTester.contains(nomorHp) ||
-              gAkunTester.contains('${userData?.nomorHp}'))
-          ? gStaticImei
-          : await gGetIdDevice();
+      String? imei = await gGetIdDevice();
 
       if (kDebugMode) {
         logger.log('AUTH_OTP_PROVIDER-SwitchAccount: imei >> $imei');
@@ -400,7 +392,7 @@ class AuthOtpProvider with ChangeNotifier {
       var responseData = responseLogin['data'];
       // Jika login berhasil, berarti data ortu dengan noRegistrasi
       // tersebut ter-data di GO_Kreasi.t_register
-      if (responseLogin['status'] && isTambahAkun) {
+      if (responseLogin['meta']['code'] && isTambahAkun) {
         // Jika berhasil login dan akses dari tambah akun, maka hanya tambahkan akun saja.
         if (kDebugMode) {
           logger.log(
@@ -423,7 +415,7 @@ class AuthOtpProvider with ChangeNotifier {
         notifyListeners();
         completer.complete();
         return true;
-      } else if (responseLogin['status'] && !isTambahAkun) {
+      } else if (responseLogin['meta']['code'] && !isTambahAkun) {
         // Jika berhasil login dan akses dari switch account,
         // maka hanya dispose semua provider dan switch ke akun yang di pilih.
         if (kDebugMode) {
@@ -466,7 +458,7 @@ class AuthOtpProvider with ChangeNotifier {
           completer.complete();
           return true;
         }
-      } else if (!responseLogin['status'] && isTambahAkun) {
+      } else if (!responseLogin['meta']['code'] && isTambahAkun) {
         // Jika login gagal dan akses dari tambah akun dan gagal,
         // artinya belum terdaftar, maka lakukan registrasi.
         final responseValidasi = await _apiService.cekValidasiRegistrasi(
@@ -660,8 +652,9 @@ class AuthOtpProvider with ChangeNotifier {
         await _setOTPAndExpireTime(int.parse(responseValidasi['waktu']), otp);
 
         // mengambil data User dari token JWT
-        Map<String, dynamic> userJson =
-            JwtDecoder.decode(responseValidasi['tokenJWT']);
+        // Map<String, dynamic> userJson =
+        //     JwtDecoder.decode(responseValidasi['tokenJWT']);
+        Map<String, dynamic> userJson = responseValidasi['tokenJWT'];
 
         // Decode Object ptn pilihan
         Map<String, dynamic>? ptnPilihan =
@@ -823,7 +816,7 @@ class AuthOtpProvider with ChangeNotifier {
     required String otp,
     required String nomorHp,
     String? noRegistrasiRefresh,
-    String? userTypeRefresh,
+    required String userTypeRefresh,
   }) async {
     Map<String, dynamic> mapHasil = {
       'status': false,
@@ -839,8 +832,7 @@ class AuthOtpProvider with ChangeNotifier {
     try {
       _isResend = false;
       _nomorHp = DataFormatter.formatPhoneNumber(phoneNumber: nomorHp);
-      String? imei =
-          (gAkunTester.contains(nomorHp)) ? gStaticImei : await gGetIdDevice();
+      String? imei = await gGetIdDevice();
 
       if (kDebugMode) {
         logger.log('AUTH_OTP_PROVIDER-Login: imei >> $imei');
@@ -849,6 +841,7 @@ class AuthOtpProvider with ChangeNotifier {
       if (imei == null) mapHasil['pesan'] = gPesanErrorImeiPermission;
 
       if (imei != null) {
+        print('hahaha${userTypeRefresh}');
         final responseLogin = await _apiService.login(
           userPhoneNumber: this.nomorHp,
           otp: otp,
@@ -857,35 +850,34 @@ class AuthOtpProvider with ChangeNotifier {
           userType: userTypeRefresh,
           noRegistrasi: noRegistrasiRefresh,
         );
-
         if (kDebugMode) {
           logger.log(
-              'AUTH_OTP_PROVIDER-Login: Produk Dibeli >> ${responseLogin['daftarProduk']}\n'
-              'AUTH_OTP_PROVIDER-Login: ${responseLogin["status"]} '
-              'kirim otp >> ${responseLogin["kirimOTP"]} | ${responseLogin['message']}');
+              'AUTH_OTP_PROVIDER-Login: Produk Dibeli >> ${responseLogin['data'][0]['daftarProduk']}\n'
+              'AUTH_OTP_PROVIDER-Login: ${responseLogin['meta']["code"] == 200} '
+              'kirim otp >> ${responseLogin['data'][0]["kirimOTP"]} | ${responseLogin['meta']['message']}');
         }
 
-        if (responseLogin["status"]) {
+        if (responseLogin['meta']["code"] == 200) {
           mapHasil['status'] = true;
-          mapHasil['pesan'] = responseLogin['message'];
-          mapHasil['kirimOTP'] = responseLogin['kirimOTP'];
+          mapHasil['pesan'] = responseLogin['meta']['message'];
+          mapHasil['kirimOTP'] = responseLogin['data'][0]['kirimOTP'];
           if (kDebugMode) {
             logger.log('AUTH_OTP_PROVIDER-Login: Map Hasil >> $mapHasil');
           }
+
           // Buat user model dari json yang telah di dapatkan.
           // Data di store sementara karena menunggu validasi OTP,
           // jika OTP berhasil baru safe data ke _userModel.
           _userModelTemp = _responseLoginToUserModel(responseLogin);
-
-          if (responseLogin['kirimOTP']) {
-            await _setOTPAndExpireTime(int.parse(responseLogin['waktu']), otp);
+          if (responseLogin['data'][0]['kirimOTP']) {
+            await _setOTPAndExpireTime(
+                int.parse(responseLogin['data'][0]['waktu']), otp);
           } else {
             _userModel.value = _userModelTemp;
             idSekolahKelas.value = _userModel.value!.idSekolahKelas;
             // Store user model dan no registrasi ke global.dart.
             gUser = _userModel.value!;
             gNoRegistrasi = gUser!.noRegistrasi;
-
             if (kDebugMode) {
               logger.log(
                   'AUTH_OTP_PROVIDER-Login: Kirim OTP false | UserModel >> ${gUser!.noRegistrasi}, '
@@ -893,19 +885,20 @@ class AuthOtpProvider with ChangeNotifier {
             }
           }
 
-          // Store token JWT ke global.dart
-          gTokenJwt = responseLogin['tokenJWT'];
+          // Store token JWT ke global.dart]
+
+          gTokenJwt = responseLogin['data'][0]['tokenJWT'];
           // Memunculkan Pesan Sukses jika bukan dari refresh profile.
           if (noRegistrasiRefresh == null) {
             await gShowTopFlash(
               gNavigatorKey.currentContext!,
-              (responseLogin['kirimOTP'])
+              (responseLogin['data'][0]['kirimOTP'])
                   ? 'Silahkan Input OTP'
                   : 'Selamat Datang ${_userModelTemp?.namaLengkap}',
               dialogType: DialogType.success,
             );
 
-            if (!responseLogin['kirimOTP']) {
+            if (!responseLogin['data'][0]['kirimOTP']) {
               await Future.delayed(gDelayedNavigation);
               AppProviders.disposeAllDisposableProviders(
                   gNavigatorKey.currentState!.context);
@@ -913,14 +906,14 @@ class AuthOtpProvider with ChangeNotifier {
           }
           notifyListeners();
         } else {
-          mapHasil['pesan'] = responseLogin['message'];
+          mapHasil['pesan'] = responseLogin['meta']['message'];
           // Memunculkan Pesan Error
           gShowBottomDialogInfo(
             gNavigatorKey.currentContext!,
             title: (responseLogin['data'] != null)
-                ? responseLogin['message']
+                ? responseLogin['meta']['message']
                 : null,
-            message: responseLogin['data'] ?? responseLogin['message'],
+            message: responseLogin['data'] ?? responseLogin['meta']['message'],
           );
         }
       }
@@ -953,7 +946,7 @@ class AuthOtpProvider with ChangeNotifier {
       if (kDebugMode) logger.log('FatalException-Login: ${e.toString()}');
       gShowTopFlash(
         gNavigatorKey.currentContext!,
-        gPesanError,
+        e.toString(),
         dialogType: DialogType.error,
       );
       mapHasil['status'] = false;
@@ -966,69 +959,69 @@ class AuthOtpProvider with ChangeNotifier {
   UserModel _responseLoginToUserModel(Map<String, dynamic> response) {
     // Menambahkan daftar anak untuk akun ORTU
     List<dynamic>? daftarAnakResponse =
-        (response['daftarAnak'] == null || response['data']['siapa'] != 'ORTU')
-            ? null
-            : json.decode(jsonEncode(response['daftarAnak']));
+        (response['data'][0]['daftarAnak'] != null ||
+                response['data'][0]['DataSiswa']['siapa'] == 'ORTU')
+            ? json.decode(jsonEncode(response['data'][0]['daftarAnak']))
+            : null;
 
     //mendaftarkan produk yg dibeli siswa
     // TODO: ganti nullable / non nullable jika flow tamu sudah jelas
     List<dynamic>? daftarProduk =
-        json.decode(jsonEncode(response['daftarProduk']));
+        json.decode(jsonEncode(response['data'][0]['responsedataproduk']));
 
     // Decode Object ptn pilihan
-    Map<String, dynamic>? ptnPilihan = (response['pilihanPTN'] != null &&
-            (response['pilihanPTN']?.isNotEmpty ?? false))
-        ? json.decode(response['pilihanPTN'])
-        : null;
-
+    // Map<String, dynamic>? ptnPilihan =
+    //     (response['data'][0]['pilihanPTN'] != null &&
+    //             (response['data'][0]['pilihanPTN']?.isNotEmpty ?? false))
+    //         ? json.decode(response['data'][0]['pilihanPTN'])
+    //         : null;
     if (kDebugMode) {
       logger.log(
-          'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: PTN Pilihan Json Decode >> $ptnPilihan | '
-          '${ptnPilihan?['pilihan1'] is String} | ${ptnPilihan?['pilihan2'] is String}\n'
+          // 'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: PTN Pilihan Json Decode >> $ptnPilihan | '
+          // '${ptnPilihan?['pilihan1'] is String} | ${ptnPilihan?['pilihan2'] is String}\n'
           'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: Produk Dibeli Json Decode >> $daftarProduk\n'
           'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: Daftar Anak Json Decode >> $daftarAnakResponse');
     }
 
     // Convert daftarAnak to List<Anak>
+    print(daftarAnakResponse);
     List<Anak> daftarAnak =
         daftarAnakResponse?.map<Anak>((anak) => Anak.fromJson(anak)).toList() ??
             [];
-
     // Convert daftarProduk to List<ProdukDibeli>
-    List<ProdukDibeli> daftarProdukDibeli = daftarProduk
+    List<ProdukDibeli> daftarProdukDibeli = daftarProduk?[0]['daftar_produk']
             ?.map<ProdukDibeli>(
                 (produkJson) => ProdukDibeli.fromJson(produkJson))
             .toList() ??
         [];
-
     daftarProdukDibeli
         .sort((a, b) => a.idJenisProduk.compareTo(b.idJenisProduk));
+    print('kkk');
 
     /// [_userJson] merupakan json User Data yang di dapat dari hasil decode dari Token JWT
-    var userJson = JwtDecoder.decode(response['tokenJWT']);
+    var userJson = response['data'][0]['DataSiswa'];
 
     if (kDebugMode) {
       logger.log(
-          'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: UserModel >> ${userJson['data']}');
+          'AUTH_OTP_PROVIDER-ResponseLoginToUserModel: UserModel >> ${userJson}');
     }
     return UserModel.fromJson(
-      userJson['data'],
+      userJson,
       daftarAnak: daftarAnak,
       daftarProduk: daftarProdukDibeli,
-      idJurusanPilihan1: (ptnPilihan?['pilihan1'] is int)
-          ? (ptnPilihan?['pilihan1'])
-          : int.tryParse('${ptnPilihan?['pilihan1']}'),
-      idJurusanPilihan2: (ptnPilihan?['pilihan2'] is int)
-          ? (ptnPilihan?['pilihan2'])
-          : int.tryParse('${ptnPilihan?['pilihan2']}'),
-      pekerjaanOrtu: response['jobOrtu'],
+      // idJurusanPilihan1: (ptnPilihan?['pilihan1'] is int)
+      //     ? (ptnPilihan?['pilihan1'])
+      //     : int.tryParse('${ptnPilihan?['pilihan1']}'),
+      // idJurusanPilihan2: (ptnPilihan?['pilihan2'] is int)
+      //     ? (ptnPilihan?['pilihan2'])
+      //     : int.tryParse('${ptnPilihan?['pilihan2']}'),
+      pekerjaanOrtu: response['data'][0]['jobOrtu'],
     );
   }
 
   Future<bool> simpanRegistrasi() async {
     try {
-      String? imei =
-          (gAkunTester.contains(nomorHp)) ? gStaticImei : await gGetIdDevice();
+      String? imei = await gGetIdDevice();
       if (imei == null) {
         return false;
       }
@@ -1049,8 +1042,9 @@ class AuthOtpProvider with ChangeNotifier {
           gTokenJwt = response['tokenJWT'];
 
           // mengambil data User dari token JWT
-          Map<String, dynamic> userJson =
-              JwtDecoder.decode(response['tokenJWT']);
+          // Map<String, dynamic> userJson =
+          //     JwtDecoder.decode(response['tokenJWT']);
+          Map<String, dynamic> userJson = response['tokenJWT'];
 
           // Decode Object ptn pilihan
           Map<String, dynamic>? ptnPilihan = (response['pilihanPTN'] != null &&
@@ -1142,11 +1136,7 @@ class AuthOtpProvider with ChangeNotifier {
 
   Future<bool> simpanLogin({String? jwtSwitchOrtu}) async {
     try {
-      String? imei = (gAkunTester.contains(nomorHp))
-          ? gStaticImei
-          : (gDeviceID.isNotEmpty)
-              ? gDeviceID
-              : await gGetIdDevice();
+      String? imei = (gDeviceID.isNotEmpty) ? gDeviceID : await gGetIdDevice();
       if (imei == null || _nomorHp == null) {
         return false;
       }
@@ -1321,11 +1311,7 @@ class AuthOtpProvider with ChangeNotifier {
         siapa: userData?.siapa,
       );
 
-      String? localImei = (gAkunTester.contains(userData?.siapa == 'ORTU'
-              ? userData?.nomorHpOrtu
-              : userData?.nomorHp))
-          ? gStaticImei
-          : await gGetIdDevice();
+      String? localImei = await gGetIdDevice();
 
       if (kDebugMode) {
         logger.log('AUTH_OTP_PROVIDER-CheckIsLogin: $responseImei : $localImei '

@@ -16,18 +16,18 @@ class CarouselModel extends Carousel {
         );
 
   factory CarouselModel.fromJson(Map<String, dynamic> json) => CarouselModel(
-        namaFile: json['nama_file'],
-        keterangan: json['keterangan'],
-        link: json['link'],
-        status: json['status'],
-        tanggal: json['tanggal'],
+        namaFile: json['c_nama_file'],
+        keterangan: json['c_keterangan'],
+        link: json['c_link'],
+        status: json['c_status'],
+        tanggal: json['c_created_at'],
       );
 
   Map<String, dynamic> toJson() => {
-        'nama_file': namaFile,
-        'keterangan': keterangan,
-        'link': link,
-        'status': status,
-        'tanggal': tanggal,
+        'c_nama_file': namaFile,
+        'c_keterangan': keterangan,
+        'c_link': link,
+        'c_status': status,
+        'c_created_at': tanggal,
       };
 }

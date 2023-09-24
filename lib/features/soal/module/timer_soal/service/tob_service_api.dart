@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:developer' as logger show log;
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:gokreasi_new/features/soal/entity/detail_jawaban.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../profile/entity/kelompok_ujian.dart';
@@ -13,6 +16,7 @@ import '../../../../../core/util/app_exceptions.dart';
 
 class TOBServiceApi {
   final _apiHelper = ApiHelper();
+  final dio = Dio();
 
   static final TOBServiceApi _instance = TOBServiceApi._internal();
 
@@ -41,7 +45,8 @@ class TOBServiceApi {
       logger.log('TOB_SERVICE_API-FetchDaftarTOB: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200)
+      throw DataException(message: response['message']);
 
     return response['data'];
   }
@@ -87,7 +92,7 @@ class TOBServiceApi {
             },
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    // if (response['meta']['code'] != 200) throw DataException(message: response['meta']['message']);
 
     return response['data'] ?? [];
   }
@@ -96,7 +101,9 @@ class TOBServiceApi {
     final Map<String, dynamic> response = await _apiHelper.requestPost(
         pathUrl: '/tryout/kisikisipaket', bodyParams: {'kodepaket': kodePaket});
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'] ?? [];
   }
@@ -105,7 +112,9 @@ class TOBServiceApi {
     final Map<String, dynamic> response = await _apiHelper.requestPost(
         pathUrl: '/tryout/detailwaktu', bodyParams: {'kodepaket': kodePaket});
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'] ?? [];
   }
@@ -201,7 +210,8 @@ class TOBServiceApi {
     final Map<String, dynamic> response = await _apiHelper.requestPost(
         pathUrl: '/tryout/daftarsoalto', bodyParams: params);
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200)
+      throw DataException(message: response['message']);
     return {
       'sisaWaktu': response['sisawaktu'],
       'data': response['data'] ?? [],
@@ -284,6 +294,7 @@ class TOBServiceApi {
     required int idJenisProduk,
     required List<Map<String, dynamic>> detailJawaban,
   }) async {
+    print('simpan Jawaban TO');
     Map<String, dynamic> params = {
       'nis': noRegistrasi,
       'role': tipeUser,
@@ -363,6 +374,21 @@ class TOBServiceApi {
           'nis': noRegistrasi,
           'kodepaket': kodePaket,
         });
+
+    return response['data'];
+  }
+
+  Future<dynamic> storeJawabanSIswa(
+      {required String tahunAjaran,
+      required String idSekolahKelas,
+      required DetailJawaban jawaban}) async {
+    // idJenisProduk 12 adalah e-GOA
+    final Map<String, dynamic> response =
+        await _apiHelper.requestPost(pathUrl: '/store/jawaban', bodyParams: {
+      'tahunAjaran': tahunAjaran,
+      'idSekolahKelas': idSekolahKelas,
+      'jawabanSiswa': jsonEncode(jawaban)
+    });
 
     return response['data'];
   }

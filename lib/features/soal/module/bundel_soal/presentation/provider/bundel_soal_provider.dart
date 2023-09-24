@@ -254,6 +254,7 @@ class BundelSoalProvider extends SoalProvider {
       if (kDebugMode) {
         logger.log('BUNDEL_SOAL_PROVIDER-GetDaftarBundelSoal: START');
       }
+      print('jalan');
       final responseData = await _apiService.fetchDaftarBundel(
         noRegistrasi: noRegistrasi,
         idSekolahKelas: idSekolahKelas,
@@ -261,6 +262,7 @@ class BundelSoalProvider extends SoalProvider {
         roleTeaser: roleTeaser,
         isProdukDibeli: isProdukDibeli,
       );
+      print(responseData);
 
       if (kDebugMode) {
         logger.log(

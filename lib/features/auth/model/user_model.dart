@@ -21,7 +21,7 @@ class Anak extends Equatable {
   factory Anak.fromJson(Map<String, dynamic> json) => Anak(
         noRegistrasi: json['noRegistrasi'] ?? 'Undefined',
         namaLengkap: json['namaLengkap'] ?? 'Sobat GO',
-        nomorHandphone: json['nomorHp'] ?? '-',
+        nomorHandphone: json['nomor_hp'] ?? '-',
       );
 
   Map<String, dynamic> toJson() => {
@@ -60,6 +60,8 @@ class UserModel extends Equatable {
   final int? idJurusanPilihan2;
   final String? pekerjaanOrtu;
   final List<ProdukDibeli> daftarProdukDibeli;
+  final String tingkat;
+  final String tingkatKelas;
   List<Anak> daftarAnak;
 
   UserModel(
@@ -87,31 +89,33 @@ class UserModel extends Equatable {
       this.idJurusanPilihan2,
       this.pekerjaanOrtu,
       required this.daftarAnak,
-      required this.daftarProdukDibeli});
+      required this.daftarProdukDibeli,
+      required this.tingkat,
+      required this.tingkatKelas});
 
-  String get tingkatKelas =>
-      Constant.kDataSekolahKelas.singleWhere(
-        (sekolah) => sekolah['id'] == idSekolahKelas,
-        orElse: () => {
-          'id': '0',
-          'kelas': 'Undefined',
-          'tingkat': 'Other',
-          'tingkatKelas': '0'
-        },
-      )['tingkatKelas'] ??
-      '0';
+  // String get tingkatKelas =>
+  //     Constant.kDataSekolahKelas.singleWhere(
+  //       (sekolah) => sekolah['id'] == idSekolahKelas,
+  //       orElse: () => {
+  //         'id': '0',
+  //         'kelas': 'Undefined',
+  //         'tingkat': 'Other',
+  //         'tingkatKelas': '0'
+  //       },
+  //     )['tingkatKelas'] ??
+  //     '0';
 
-  String get tingkat =>
-      Constant.kDataSekolahKelas.singleWhere(
-        (sekolah) => sekolah['id'] == idSekolahKelas,
-        orElse: () => {
-          'id': '0',
-          'kelas': 'Undefined',
-          'tingkat': 'Other',
-          'tingkatKelas': '0'
-        },
-      )['tingkat'] ??
-      '0';
+  // String get tingkat =>
+  //     Constant.kDataSekolahKelas.singleWhere(
+  //       (sekolah) => sekolah['id'] == idSekolahKelas,
+  //       orElse: () => {
+  //         'id': '0',
+  //         'kelas': 'Undefined',
+  //         'tingkat': 'Other',
+  //         'tingkatKelas': '0'
+  //       },
+  //     )['tingkat'] ??
+  //     '0';
 
   List<int> get dataKampusImpian {
     List<int> data = [];
@@ -150,7 +154,8 @@ class UserModel extends Equatable {
           if (namaBundling == 0) {
             int jenisProduk = a.namaJenisProduk.compareTo(b.namaJenisProduk);
             if (jenisProduk == 0) {
-              int panjangProduk = a.namaProduk.length.compareTo(b.namaProduk.length);
+              int panjangProduk =
+                  a.namaProduk.length.compareTo(b.namaProduk.length);
               if (panjangProduk == 0) {
                 return a.namaProduk.compareTo(b.namaProduk);
               }
@@ -224,29 +229,39 @@ class UserModel extends Equatable {
       namaLengkap: json['namaLengkap'],
       email: json['email'] ?? 'Email belum terdata',
       emailOrtu: json['emailOrtu'] ?? 'Email ortu belum terdata',
-      nomorHp: json['nomorHp'],
-      nomorHpOrtu: json['nomorHpOrtu'] ?? 'Nomor handphone ortu belum terdata',
-      idSekolahKelas: json['idSekolahKelas'],
+      nomorHp: json['nomor_hp'],
+      nomorHpOrtu:
+          json['nomor_hp_ortu'] ?? 'Nomor handphone ortu belum terdata',
+      idSekolahKelas: json['idSekolahKelas'] is int
+          ? json['idSekolahKelas'].toString()
+          : json['idSekolahKelas'],
       namaSekolahKelas: json['namaSekolahKelas'],
+      tingkat: json['tingkat'] ?? json['namaSekolahKelas'].substring(3, 6),
+      tingkatKelas: json['tingkatKelas'] ??
+          json['namaSekolahKelas'].substring(
+            6,
+          ),
       siapa: json['siapa'],
       idKelasGO: (json['idKelas'] == null)
           ? const ['0']
-          : (json['idKelas'] as String).split(','),
+          : (json['idKelas'].toString()).split(','),
       namaKelasGO: (json['namaKelas'] == null)
           ? const ['Undefined']
           : (json['namaKelas'] as String).split(','),
       tipeKelasGO: json['jenisKelas'] ?? 'Undefined',
-      idGedung: (json['idGedung'] == null || json['idGedung'].isEmpty)
-          ? '2'
-          : json['idGedung'],
+      idGedung: (json['idGedung'] == null) ? '2' : json['idGedung'].toString(),
       namaGedung: json['namaGedung'] ?? "PW 36-B",
-      idKota: (json['idKota'] == null || json['idKota'].isEmpty)
+      idKota: (json['idKota'] == null)
           ? '1'
-          : json['idKota'],
+          : json['idKota'] is int
+              ? json['idKota'].toString()
+              : json['idKota'],
       namaKota: (json['namaKota'] == null || json['namaKota'].isEmpty)
           ? 'BANDUNG'
           : json['namaKota'],
-      idSekolah: json['idSekolah'] ?? '-',
+      idSekolah: json['idSekolah'] is int
+          ? json['idSekolah'].toString()
+          : json['idSekolah'] ?? '-',
       namaSekolah: json['namaSekolah'] ?? 'Asal sekolah belum terdata',
       tahunAjaran: json['tahunAjaran'] ?? 'Undefined',
       statusBayar: json['c_Statusbayar'] ?? 'Undefined',
@@ -287,14 +302,15 @@ class UserModel extends Equatable {
         'tahunAjaran': tahunAjaran,
         'c_Statusbayar': statusBayar,
         'email': email,
-        'nomorHp': nomorHp,
-        'nomorHpOrtu': nomorHpOrtu,
+        'nomor_hp': nomorHp,
+        'nomor_hp_ortu': nomorHpOrtu,
         'idJurusanPilihan1': idJurusanPilihan1,
         'idJurusanPilihan2': idJurusanPilihan2,
         'pekerjaanOrtu': pekerjaanOrtu,
         'daftarAnak': daftarAnak.map((anak) => anak.toJson()).toList(),
         'produkDibeli':
-            daftarProdukDibeli.map((produk) => produk.toJson()).toList()
+            daftarProdukDibeli.map((produk) => produk.toJson()).toList(),
+        'emailOrtu': emailOrtu
       };
 
   @override

@@ -19,7 +19,9 @@ class KehadiranServiceApi {
       response = jsonDecode(response);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'];
   }

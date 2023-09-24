@@ -88,13 +88,13 @@ class KampusImpian extends HiveObject {
     return KampusImpian(
       pilihanKe: json['pilihan'],
       tanggalPilih: DataFormatter.stringToDate(json['tanggal']),
-      idPTN: json['idPTN'],
-      namaPTN: json['namaPTN'],
-      aliasPTN: json['aliasPTN'],
-      idJurusan: json['idJurusan'],
-      namaJurusan: json['namaJurusan'],
-      peminat: json['peminat'],
-      tampung: json['tampung'],
+      idPTN: json['id_universitas'],
+      namaPTN: json['nama_universitas'],
+      aliasPTN: json['akronim_universitas'],
+      idJurusan: json['id_jurusan'],
+      namaJurusan: json['nama_jurusan'],
+      peminat: json['peminat'][0]['jml'].toString(),
+      tampung: json['data_tampung'][0]['jml'].toString(),
     );
   }
 

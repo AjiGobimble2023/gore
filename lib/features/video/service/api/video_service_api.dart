@@ -23,21 +23,24 @@ class VideoServiceApi {
           'params($noRegistrasi, $kodeBab, $jenisBuku)');
     }
 
-    final response =
-        await _apiHelper.requestPost(pathUrl: "/video", bodyParams: {
-      'noRegistrasi': noRegistrasi,
-      'kodeBab': kodeBab,
-      'levelTeori': levelTeori,
-      'kelengkapan': kelengkapan,
-      'idTeoriBab': idTeoriBab,
-      'jenisBuku': jenisBuku
-    });
+    final response = await _apiHelper.requestPost(
+        pathUrl: "/video/teori/${kodeBab}/${idTeoriBab}",
+        bodyParams: {
+          'noRegistrasi': noRegistrasi,
+          'kodeBab': kodeBab,
+          'levelTeori': levelTeori,
+          'kelengkapan': kelengkapan,
+          'idTeoriBab': idTeoriBab,
+          'jenisBuku': jenisBuku
+        });
 
     if (kDebugMode) {
       logger.log('VIDEO_SERVICE_API-FetchVideoTeori: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'] ?? [];
   }
@@ -52,7 +55,9 @@ class VideoServiceApi {
       logger.log('VIDEO_SERVICE_API-FetchVideoSoal: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'];
   }
@@ -98,7 +103,9 @@ class VideoServiceApi {
           'VIDEO_SERVICE_API-FetchVideoJadwalMapel: $noRegistrasi-$userType response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'] ?? [];
   }
@@ -121,10 +128,11 @@ class VideoServiceApi {
           'VIDEO_SERVICE_API-FetchVideoJadwal: $idMataPelajaran response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response['data'] ?? [];
-
   }
 
   // Request token key to get url video stream.

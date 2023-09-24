@@ -1,6 +1,5 @@
 // ignore: depend_on_referenced_packages
 import 'package:hive/hive.dart';
-import '../../../core/config/constant.dart';
 
 part 'bookmark.g.dart';
 

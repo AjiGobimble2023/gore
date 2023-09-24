@@ -369,6 +369,10 @@ class TOBProvider extends SoalProvider {
           lastUpdate: (soalTemp ?? soal).lastUpdate);
 
       if (noRegistrasi != null && tipeUser != null && tipeUser != 'ORTU') {
+        await _apiService.storeJawabanSIswa(
+            tahunAjaran: tahunAjaran,
+            idSekolahKelas: idSekolahKelas,
+            jawaban: detailJawabanSiswa);
         // Penyimpanan untuk SISWA dan TAMU.
         // await _firebaseHelper.setTempJawabanSiswa(
         //   tahunAjaran: tahunAjaran,
@@ -413,7 +417,10 @@ class TOBProvider extends SoalProvider {
       //   idSekolahKelas: idSekolahKelas,
       //   kumpulkanSemua: true,
       // );
-      return [];
+      final jawaban = [];
+      final List<DetailJawaban> daftarJawaban =
+          jawaban.map((json) => DetailJawaban.fromJson(json)).toList();
+      return daftarJawaban;
     } else {
       // Penyimpanan untuk Teaser No User dan Ortu.
       return await _soalServiceLocal.getJawabanSiswaByKodePaket(
@@ -1051,7 +1058,7 @@ class TOBProvider extends SoalProvider {
       // Mengambil detail waktu terlebih dahulu untuk keperluan Remedial GOA.
       final responseDetailWaktu =
           await _apiService.fetchDetailWaktu(kodePaket: kodePaket);
- 
+
       if (kDebugMode) {
         logger.log(
             'TOB_PROVIDER-GetDaftarSoalTO: detail waktu >> $responseDetailWaktu');
@@ -1223,7 +1230,7 @@ class TOBProvider extends SoalProvider {
         logger.log(
             'TOB_PROVIDER-GetDaftarSoalTO: jawabanFirebase >> $jawabanFirebase');
       }
-     
+
       // Jika [listSoal] tidak memiliki key idBundel tertentu maka buat key valuenya dulu.
       if (!listSoal.containsKey(cacheKey)) {
         listSoal[cacheKey!] = [];

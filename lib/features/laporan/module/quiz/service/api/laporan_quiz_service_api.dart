@@ -29,7 +29,9 @@ class LaporanKuisServiceAPI {
       logger.log('LAPORAN_SERVICE_API-FetchLaporanKuis: Response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['meta']['message']);
+    }
 
     return response;
   }

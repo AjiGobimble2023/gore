@@ -9,9 +9,9 @@ class PTNModel extends PTN {
   });
 
   factory PTNModel.fromJson(Map<String, dynamic> json) => PTNModel(
-        idPTN: json['idPTN'],
-        namaPTN: json['namaPTN'],
-        aliasPTN: json['aliasPTN'],
+        idPTN: json['id_universitas'],
+        namaPTN: json['nama_universitas'],
+        aliasPTN: json['akronim_universitas'],
         jenisPTN: json['jenis'],
       );
 }

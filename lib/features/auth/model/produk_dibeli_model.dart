@@ -31,47 +31,49 @@ class ProdukDibeli extends Equatable {
           .isAfter(tanggalKedaluwarsa!);
 
   factory ProdukDibeli.fromJson(Map<String, dynamic> json) => ProdukDibeli(
-      idKomponenProduk: json['c_IdKomponentProduk'],
-      idBundling: json['c_IdBundling'] ?? '0',
-      namaBundling: json['c_NamaBundling'] ?? 'Undefined',
-      namaProduk: json['c_NamaProduk'],
-      idSekolahKelas: (json['c_IdSekolahKelas'] != null &&
-              json['c_IdSekolahKelas'] is String)
-          ? int.parse(json['c_IdSekolahKelas'])
-          : (json['c_IdSekolahKelas'] != null &&
-                  json['c_IdSekolahKelas'] is int)
-              ? json['c_IdSekolahKelas']
+      idKomponenProduk: json['id_produk'].toString(),
+      idBundling: json['id_bundling'] is int
+          ? json['id_bundling'].toString()
+          : json['id_bundling'] ?? '0',
+      namaBundling: json['nama_bundling'] ?? 'Undefined',
+      namaProduk: json['nama_produk'],
+      idSekolahKelas: (json['id_sekolah_kelas'] != null &&
+              json['id_sekolah_kelas'] is String)
+          ? int.parse(json['id_sekolah_kelas'])
+          : (json['id_sekolah_kelas'] != null &&
+                  json['id_sekolah_kelas'] is int)
+              ? json['id_sekolah_kelas']
               : 0,
-      idJenisProduk: (json['c_IdJenisProduk'] != null &&
-              json['c_IdJenisProduk'] is String)
-          ? int.parse(json['c_IdJenisProduk'])
-          : (json['c_IdJenisProduk'] != null && json['c_IdJenisProduk'] is int)
-              ? json['c_IdJenisProduk']
+      idJenisProduk: (json['id_jenis_produk'] != null &&
+              json['id_jenis_produk'] is String)
+          ? int.parse(json['id_jenis_produk'])
+          : (json['id_jenis_produk'] != null && json['id_jenis_produk'] is int)
+              ? json['id_jenis_produk']
               : 0,
-      namaJenisProduk: '${json['c_NamaJenisProduk']}'.replaceAll('- ', '-'),
-      tanggalBerlaku: (json['c_TanggalAwal'] != null &&
-              json['c_TanggalAwal'] != '' &&
-              json['c_TanggalAwal'] != '-')
-          ? DataFormatter.stringToDate(json['c_TanggalAwal'], 'yyyy-MM-dd')
+      namaJenisProduk: '${json['nama_jenis_produk']}'.replaceAll('- ', '-'),
+      tanggalBerlaku: (json['tanggal_awal'] != null &&
+              json['tanggal_awal'] != '' &&
+              json['tanggal_awal'] != '-')
+          ? DataFormatter.stringToDate(json['tanggal_akhir'], 'yyyy-MM-dd')
           : null,
-      tanggalKedaluwarsa: (json['c_TanggalAkhir'] != null &&
-              json['c_TanggalAkhir'] != '' &&
-              json['c_TanggalAkhir'] != '-')
-          ? DataFormatter.stringToDate(json['c_TanggalAkhir'], 'yyyy-MM-dd')
+      tanggalKedaluwarsa: (json['tanggal_akhir'] != null &&
+              json['tanggal_akhir'] != '' &&
+              json['tanggal_akhir'] != '-')
+          ? DataFormatter.stringToDate(json['tanggal_akhir'], 'yyyy-MM-dd')
           : null);
 
   Map<String, dynamic> toJson() => {
-        'c_IdKomponentProduk': idKomponenProduk,
-        'c_IdBundling': idBundling,
-        'c_NamaBundling': namaBundling,
-        'c_NamaProduk': namaProduk,
-        'c_IdJenisProduk': '$idJenisProduk',
-        'c_IdSekolahKelas': '$idSekolahKelas',
-        'c_NamaJenisProduk': namaJenisProduk,
-        'c_TanggalAwal': (tanggalBerlaku != null)
+        'id_produk': idKomponenProduk,
+        'id_bundling': idBundling,
+        'nama_bundling': namaBundling,
+        'nama_produk': namaProduk,
+        'id_jenis_produk': '$idJenisProduk',
+        'id_sekolah_kelas': '$idSekolahKelas',
+        'nama_jenis_produk': namaJenisProduk,
+        'tanggal_awal': (tanggalBerlaku != null)
             ? DataFormatter.dateTimeToString(tanggalBerlaku!, 'yyyy-MM-dd')
             : null,
-        'c_TanggalAkhir': (tanggalKedaluwarsa != null)
+        'tanggal_akhir': (tanggalKedaluwarsa != null)
             ? DataFormatter.dateTimeToString(tanggalKedaluwarsa!, 'yyyy-MM-dd')
             : null,
       };

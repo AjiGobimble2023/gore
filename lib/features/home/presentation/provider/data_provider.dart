@@ -88,6 +88,7 @@ class DataProvider with ChangeNotifier {
     }
     try {
       final responseData = await _apiService.fetchCarousel();
+      print(responseData);
 
       if (responseData.length > 0) {
         for (int i = 0; i < responseData.length; i++) {

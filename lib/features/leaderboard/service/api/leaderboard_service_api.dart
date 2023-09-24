@@ -39,7 +39,9 @@ class LeaderboardServiceApi {
           'Response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response;
   }
@@ -69,7 +71,7 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchFirstRank: '
           'response >> $response');
     }
-    if (!response['status']) throw DataException(message: response['data']);
+    // if (!response['status']) throw DataException(message: response['data']);
 
     return response['data'];
   }
@@ -102,7 +104,9 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchCapaianScoreKamu: '
           'response >> $response');
     }
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'];
   }
@@ -137,9 +141,10 @@ class LeaderboardServiceApi {
           "LEADERBOARD_SERVICE_API-FetchHasilPengerjaanSoal: response >> $response");
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response['meta']['code'] != 200) {
+      throw DataException(message: response['message']);
+    }
 
     return response['data'];
-
   }
 }

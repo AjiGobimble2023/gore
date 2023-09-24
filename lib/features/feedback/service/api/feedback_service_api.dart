@@ -16,7 +16,6 @@ class FeedbackServiceApi {
     if (!response['status']) throw DataException(message: response['message']);
 
     return response['data'];
-    
   }
 
   Future<void> setFeedback({

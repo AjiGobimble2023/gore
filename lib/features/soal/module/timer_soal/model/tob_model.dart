@@ -22,14 +22,14 @@ class TobModel extends Tob {
       logger.log('TOB_MODEL-FromJson: json >> $json');
     }
     return TobModel(
-      kodeTOB: json['c_KodeTOB'],
-      namaTOB: json['c_NamaTOB'],
-      jenisTOB: json['jenisTOB'] ?? 'TryOut',
-      tanggalMulai: json['tanggalMulai'],
-      tanggalBerakhir: json['tanggalBerakhir'],
-      jarakAntarPaket: int.tryParse('${json['jarakAntarPaket']}') ?? 0,
-      isFormatTOMerdeka: (json['isTOMerdeka'] == '1') ? true : false,
-      isBersyarat: (json['isBersyarat'] == '1') ? true : false,
+      kodeTOB: json['kode_tob'].toString(),
+      namaTOB: json['nama_tob'],
+      jenisTOB: json['jenis_tob'] ?? 'TryOut',
+      tanggalMulai: json['tanggal_mulai'],
+      tanggalBerakhir: json['tanggal_selesai'],
+      jarakAntarPaket: json['jarak_antar_paket'] ?? 0,
+      isFormatTOMerdeka: json['isKurikulumMerdeka'],
+      isBersyarat: json['isbersyarat'] == '1',
       isTeaser: json['jenis'] == 'teaser',
     );
   }
