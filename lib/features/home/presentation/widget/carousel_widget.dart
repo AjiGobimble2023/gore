@@ -2,9 +2,8 @@ import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../provider/data_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gokreasi_new/features/home/presentation/bloc/data/data_bloc.dart';
 import '../../model/carousel_model.dart';
 import '../../../../core/config/extensions.dart';
 import '../../../../core/shared/widget/loading/shimmer_widget.dart';
@@ -35,38 +34,46 @@ class _CarouselWidgetState extends State<CarouselWidget> {
   @override
   void initState() {
     super.initState();
-    _fetchCarousel = context.read<DataProvider>().loadCarousel();
+    // Membuat dan memicu event untuk memuat data Carousel saat initState
+    context.read<DataBloc>().add(LoadCarouselEvent());
   }
 
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
 
-    return FutureBuilder<List<CarouselModel>>(
-      future: _fetchCarousel,
-      builder: (context, carouselSnapshot) => carouselSnapshot
-                  .connectionState ==
-              ConnectionState.done
-          ? carouselSnapshot.hasData && (carouselSnapshot.data?.length ?? 0) > 0
-              ? _buildCarousel(carouselSnapshot.data!)
-              : _buildContainer(
-                  deviceSize,
-                  RefreshExceptionWidget(
-                    message: carouselSnapshot.error.toString(),
-                    onTap: () => setState(() {
-                      _fetchCarousel =
-                          context.read<DataProvider>().loadCarousel();
-                    }),
-                  ),
-                )
-          : _buildContainer(
-              deviceSize,
-              ShimmerWidget.rounded(
-                width: double.infinity,
-                height: double.infinity,
-                borderRadius: BorderRadius.circular(12),
-              ),
+    return BlocBuilder<DataBloc, DataState>(
+      builder: (context, state) {
+        if (state is DataError) {
+          return _buildContainer(
+            deviceSize,
+            RefreshExceptionWidget(
+              message: state.error,
+              onTap: () {
+                // Memicu event untuk memuat ulang data Carousel
+                context.read<DataBloc>().add(LoadCarouselEvent());
+              },
             ),
+          );
+        } else {
+          final List<CarouselModel> listCarousel = state.items;
+
+          if (listCarousel.isNotEmpty) {
+            return _buildCarousel(listCarousel);
+          } else {
+            return _buildContainer(
+              deviceSize,
+              RefreshExceptionWidget(
+                message: 'Tidak ada data Carousel.',
+                onTap: () {
+                  // Memicu event untuk memuat ulang data Carousel
+                  context.read<DataBloc>().add(LoadCarouselEvent());
+                },
+              ),
+            );
+          }
+        }
+      },
     );
   }
 

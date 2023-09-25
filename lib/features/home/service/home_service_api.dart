@@ -29,7 +29,6 @@ class HomeServiceAPI {
       Dio dio = Dio();
       final response =
           await dio.get('http://192.168.20.250:4002/api/v1/data/carousel');
-      print(response.data);
       return response.data['data'];
     } catch (e) {
       // Tangani kesalahan jika terjadi

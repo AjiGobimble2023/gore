@@ -4,6 +4,8 @@ import 'dart:developer' as logger show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gokreasi_new/features/home/presentation/bloc/data/data_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,14 +20,14 @@ class UpdateVersionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dataProvider = context.read<DataProvider>();
-    final UpdateVersion? updateVersion =
-        context.read<DataProvider>().updateVersion;
+    // final dataProvider = context.read<DataProvider>();
+    // final UpdateVersion? updateVersion =
+    //     context.read<DataProvider>().updateVersion;
 
-    if (updateVersion == null) {
-      Future.delayed(gDelayedNavigation)
-          .then((value) => Navigator.pop(context));
-    }
+    // if (updateVersion == null) {
+    //   Future.delayed(gDelayedNavigation)
+    //       .then((value) => Navigator.pop(context));
+    // }
 
     return Stack(
       children: [
@@ -52,74 +54,93 @@ class UpdateVersionWidget extends StatelessWidget {
                   ? const BorderRadius.vertical(top: Radius.circular(34))
                   : BorderRadius.circular(34),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Text(
-                    '${updateVersion?.title}',
-                    style: context.text.titleLarge,
-                  ),
-                ),
-                Divider(height: min(32, context.dp(18))),
-                Text(
-                  '${updateVersion?.description}',
-                  style: context.text.bodyMedium?.copyWith(
-                    fontSize: (context.isMobile) ? 14 : 10,
-                    color: context.onBackground.withOpacity(0.64),
-                  ),
-                ),
-                const Spacer(),
-                Divider(height: min(36, context.dp(20))),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
+            child: BlocBuilder<DataBloc, DataState>(
+              builder: (context, state) {
+                if (state is DataLoaded) {
+                  String url = '';
+                  String altUrl = '';
+                  if (Platform.isAndroid) {
+                    url = state.updateVersion!.android.url;
+                    altUrl = state.updateVersion!.android.altUrl;
+                  } else if (Platform.isIOS) {
+                    url = state.updateVersion!.ios.url;
+                    altUrl = state.updateVersion!.ios.altUrl;
+                  }
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
                         child: Text(
-                          'Versi sekarang: ${dataProvider.currentVersion}\n'
-                          'Tersedia versi: ${dataProvider.versionAvailable}',
-                          style: context.text.bodySmall?.copyWith(
-                            fontSize: (context.isMobile) ? 12 : 9,
+                          '${state.updateVersion?.title}',
+                          style: context.text.titleLarge,
+                        ),
+                      ),
+                      Divider(height: min(32, context.dp(18))),
+                      Text(
+                        '${state.updateVersion?.description}',
+                        style: context.text.bodyMedium?.copyWith(
+                          fontSize: (context.isMobile) ? 14 : 10,
+                          color: context.onBackground.withOpacity(0.64),
+                        ),
+                      ),
+                      const Spacer(),
+                      Divider(height: min(36, context.dp(20))),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Versi sekarang: ${state.currentVersion}\n'
+                                'Tersedia versi: ${state.versionAvailable}',
+                                style: context.text.bodySmall?.copyWith(
+                                  fontSize: (context.isMobile) ? 12 : 9,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: min(26, max(14, context.dp(14)))),
-                    if (!(updateVersion?.isWajib ?? false))
-                      OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          textStyle: (context.isMobile)
-                              ? null
-                              : context.text.labelSmall,
-                          padding: EdgeInsets.symmetric(
-                            vertical: min(14, max(12, context.dp(8))),
-                            horizontal: min(22, max(16, context.dp(14))),
+                          SizedBox(width: min(26, max(14, context.dp(14)))),
+                          if (!(state.updateVersion?.isWajib ?? false))
+                            OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                textStyle: (context.isMobile)
+                                    ? null
+                                    : context.text.labelSmall,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: min(14, max(12, context.dp(8))),
+                                  horizontal: min(22, max(16, context.dp(14))),
+                                ),
+                              ),
+                              child: const Text('Nanti saja'),
+                            ),
+                          if (!(state.updateVersion?.isWajib ?? false))
+                            SizedBox(width: min(12, max(8, context.dp(8)))),
+                          ElevatedButton(
+                            onPressed: () async =>
+                                await _updateApp(context, url, altUrl),
+                            style: ElevatedButton.styleFrom(
+                              textStyle: (context.isMobile)
+                                  ? null
+                                  : context.text.labelSmall,
+                              padding: EdgeInsets.symmetric(
+                                vertical: min(14, max(12, context.dp(8))),
+                                horizontal: min(22, max(16, context.dp(14))),
+                              ),
+                            ),
+                            child: Text((state.updateVersion?.isWajib ?? false)
+                                ? 'Update GO Kreasi'
+                                : 'Update'),
                           ),
-                        ),
-                        child: const Text('Nanti saja'),
-                      ),
-                    if (!(updateVersion?.isWajib ?? false))
-                      SizedBox(width: min(12, max(8, context.dp(8)))),
-                    ElevatedButton(
-                      onPressed: () async => await _updateApp(context),
-                      style: ElevatedButton.styleFrom(
-                        textStyle:
-                            (context.isMobile) ? null : context.text.labelSmall,
-                        padding: EdgeInsets.symmetric(
-                          vertical: min(14, max(12, context.dp(8))),
-                          horizontal: min(22, max(16, context.dp(14))),
-                        ),
-                      ),
-                      child: Text((updateVersion?.isWajib ?? false)
-                          ? 'Update GO Kreasi'
-                          : 'Update'),
-                    ),
-                  ],
-                )
-              ],
+                        ],
+                      )
+                    ],
+                  );
+                } else {
+                  return SizedBox();
+                }
+              },
             ),
           ),
         ),
@@ -146,21 +167,13 @@ class UpdateVersionWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _updateApp(BuildContext context) async {
+  Future<void> _updateApp(
+      BuildContext context, String urlInput, String altUrlInput) async {
     try {
-      final dataProvider = context.read<DataProvider>();
       if (Platform.isAndroid || Platform.isIOS) {
-        final url = Uri.parse(
-          Platform.isAndroid
-              ? dataProvider.updateVersion!.android.url
-              : dataProvider.updateVersion!.ios.url,
-        );
+        final url = Uri.parse(urlInput);
 
-        final altUrl = Uri.parse(
-          Platform.isAndroid
-              ? dataProvider.updateVersion!.android.altUrl
-              : dataProvider.updateVersion!.ios.altUrl,
-        );
+        final altUrl = Uri.parse(altUrlInput);
 
         bool canLaunch = await canLaunchUrl(url);
 
@@ -191,3 +204,4 @@ class UpdateVersionWidget extends StatelessWidget {
     }
   }
 }
+
