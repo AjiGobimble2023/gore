@@ -86,6 +86,7 @@ class _BaseDialogWidgetState extends State<BaseDialogWidget> {
         _message = 'Sedang Dalam Perbaikan';
         _icon = Icons.help_center_rounded;
         _color = Colors.redAccent;
+      break;
       case DialogType.Basic:
       default:
         _title = 'Informasi';

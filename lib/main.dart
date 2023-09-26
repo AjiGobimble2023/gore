@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gokreasi_new/bloc/bloc/auth_bloc.dart';
+import 'package:gokreasi_new/features/home/presentation/bloc/data/data_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,6 +18,7 @@ import 'core/config/global.dart';
 import 'core/config/extensions.dart';
 import 'core/shared/screen/splash_screen.dart';
 import 'core/shared/provider/log_provider.dart';
+import 'core/util/injector.dart' as di;
 import 'features/bookmark/entity/bookmark.dart';
 import 'features/soal/entity/detail_jawaban.dart';
 import 'features/profile/entity/scanner_type.dart';
@@ -116,6 +120,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    di.init();
     gNavigatorKey = _navigatorKey;
     // if (gPayload.isNotEmpty) {
     //   _notificationService.bukaScreen();
@@ -228,6 +233,10 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<AuthOtpProvider>(
           create: (_) => AuthOtpProvider(),
         ),
+        BlocProvider(
+          create: (context) => di.locator<DataBloc>(),
+        ),
+        BlocProvider(create: (context) => AuthBloc()),
       ],
       child: MaterialApp(
         title: 'GO Kreasi',
