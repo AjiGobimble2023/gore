@@ -6,6 +6,8 @@ import 'dart:math';
 
 import 'package:flash/flash_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gokreasi_new/bloc/bloc/auth_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -33,6 +35,8 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  late AuthBloc authBloc;
+
   // Local Variable
   bool _login = true;
 
@@ -50,6 +54,13 @@ class _AuthScreenState extends State<AuthScreen> {
   final _namaLengkapController = TextEditingController();
   final _emailController = TextEditingController();
   final _tanggalLahirController = TextEditingController();
+  var completer = Completer();
+
+  @override
+  void initState() {
+    super.initState();
+    authBloc = context.read<AuthBloc>();
+  }
 
   @override
   void dispose() {
@@ -69,59 +80,94 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          FocusScopeNode currentFocus = FocusScope.of(context);
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoadedLogin) {
+            if (kDebugMode) {
+              logger.log(
+                  'AUTH_SCREEN-ON_CLICK_MASUK: Nomor HP >> ${_authOtpProvider.nomorHp}');
 
-          if (!currentFocus.hasPrimaryFocus) {
-            currentFocus.unfocus();
+              completer.complete();
+
+              if (state.response.data == null) {
+                return;
+              }
+
+              final kirimOtp = state.response.data?[0].kirimOtp ?? false;
+              print('otppppp $kirimOtp');
+              if (kirimOtp) {
+                _navigator.pushNamed(Constant.kRouteOTPScreen,
+                    arguments: {'isLogin': _login});
+              } else {
+                // Simpan data user di local storage agar persistent.
+                KreasiSharedPref().simpanDataLokal();
+
+                if (kDebugMode) logger.log("MASUK HOME SCREEN");
+                // Navigate ke HOME SCREEN
+                Future.delayed(gDelayedNavigation).then((_) {
+                  _navigator.popUntil((route) => route.isFirst);
+                });
+              }
+            }
+          } else if (state is ErrorAuth) {
+            completer.complete();
+            gShowTopFlash(context, state.error);
           }
         },
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Container(
-            width: context.dw,
-            height: context.dh,
-            padding: EdgeInsets.only(
-              top: (context.isMobile) ? context.dp(38) : 32,
-              right: (context.isMobile) ? context.dp(20) : 14,
-              left: min(32, context.dp(20)),
-              bottom: (context.isMobile) ? context.dp(30) : 32,
-            ),
-            child: ResponsiveBuilder(
-              mobile: Column(
-                children: [
-                  _buildAnimatedImage(context),
-                  _buildForm(context),
-                  _buildMasukDaftarButton(context),
-                ],
+        child: GestureDetector(
+          onTap: () {
+            FocusScopeNode currentFocus = FocusScope.of(context);
+
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
+              width: context.dw,
+              height: context.dh,
+              padding: EdgeInsets.only(
+                top: (context.isMobile) ? context.dp(38) : 32,
+                right: (context.isMobile) ? context.dp(20) : 14,
+                left: min(32, context.dp(20)),
+                bottom: (context.isMobile) ? context.dp(30) : 32,
               ),
-              tablet: Row(
-                children: [
-                  _buildAnimatedImage(context),
-                  Expanded(
-                    child: Scrollbar(
-                      controller: _scrollController,
-                      thickness: 8,
-                      thumbVisibility: true,
-                      trackVisibility: true,
-                      radius: const Radius.circular(14),
-                      child: ListView(
+              child: ResponsiveBuilder(
+                mobile: Column(
+                  children: [
+                    _buildAnimatedImage(context),
+                    _buildForm(context),
+                    _buildMasukDaftarButton(context),
+                  ],
+                ),
+                tablet: Row(
+                  children: [
+                    _buildAnimatedImage(context),
+                    Expanded(
+                      child: Scrollbar(
                         controller: _scrollController,
-                        padding: const EdgeInsets.only(
-                          left: 12,
-                          right: 12,
+                        thickness: 8,
+                        thumbVisibility: true,
+                        trackVisibility: true,
+                        radius: const Radius.circular(14),
+                        child: ListView(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.only(
+                            left: 12,
+                            right: 12,
+                          ),
+                          children: [
+                            _buildForm(context),
+                            const SizedBox(height: 32),
+                            _buildMasukDaftarButton(context),
+                            const SizedBox(height: 82),
+                          ],
                         ),
-                        children: [
-                          _buildForm(context),
-                          const SizedBox(height: 32),
-                          _buildMasukDaftarButton(context),
-                          const SizedBox(height: 82),
-                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -147,7 +193,7 @@ class _AuthScreenState extends State<AuthScreen> {
               : 'Mohon isi terlebih dahulu nomor HP anda');
       return;
     }
-    var completer = Completer();
+
     try {
       context.showBlockDialog(dismissCompleter: completer);
 
@@ -167,38 +213,61 @@ class _AuthScreenState extends State<AuthScreen> {
         return await _authOtpProvider.generateOTP();
       });
 
-      Map<String, dynamic> loginResponse = await _authOtpProvider.login(
-        otp: otp,
-        userTypeRefresh: _pilihanRole.value.name,
-        nomorHp: DataFormatter.formatPhoneNumber(
-          phoneNumber: _noHpController.text,
-        ),
-      );
-
-      if (kDebugMode) {
-        logger.log(
-            'AUTH_SCREEN-ON_CLICK_MASUK: Nomor HP >> ${_authOtpProvider.nomorHp}');
-        logger.log('AUTH_SCREEN-ON_CLICK_MASUK: Generate OTP >> $otp');
-        logger.log(
-            'AUTH_SCREEN-ON_CLICK_MASUK: Request Login Response >> $loginResponse');
-      }
-      completer.complete();
-      if (!loginResponse['status']) {
+      if (_noHpController.text.isEmpty) {
+        gShowTopFlash(context, 'Mohon masukkan nomor handphone anda');
         return;
       }
-      if (loginResponse['kirimOTP']) {
-        _navigator.pushNamed(Constant.kRouteOTPScreen,
-            arguments: {'isLogin': _login});
-      } else {
-        // Simpan data user di local storage agar persistent.
-        await KreasiSharedPref().simpanDataLokal();
 
-        if (kDebugMode) logger.log("MASUK HOME SCREEN");
-        // Navigate ke HOME SCREEN
-        Future.delayed(gDelayedNavigation).then((_) {
-          _navigator.popUntil((route) => route.isFirst);
-        });
+      String? imei = await gGetIdDevice();
+
+      if (imei == null) {
+        gShowTopFlash(context, gPesanErrorImeiPermission);
+        return;
       }
+
+      authBloc.add(AuthLogin(
+        otp: otp,
+        userTypeRefresh: _pilihanRole.value.name,
+        phoneNumber: DataFormatter.formatPhoneNumber(
+          phoneNumber: _noHpController.text,
+        ),
+        noRegistrasiRefresh: '',
+        via: '',
+        imei: imei,
+      ));
+
+      // Map<String, dynamic> loginResponse = await _authOtpProvider.login(
+      //   otp: otp,
+      //   userTypeRefresh: _pilihanRole.value.name,
+      //   nomorHp: DataFormatter.formatPhoneNumber(
+      //     phoneNumber: _noHpController.text,
+      //   ),
+      // );
+
+      // if (kDebugMode) {
+      //   logger.log(
+      //       'AUTH_SCREEN-ON_CLICK_MASUK: Nomor HP >> ${_authOtpProvider.nomorHp}');
+      //   logger.log('AUTH_SCREEN-ON_CLICK_MASUK: Generate OTP >> $otp');
+      //   logger.log(
+      //       'AUTH_SCREEN-ON_CLICK_MASUK: Request Login Response >> $loginResponse');
+      // }
+      // completer.complete();
+      // if (!loginResponse['status']) {
+      //   return;
+      // }
+      // if (loginResponse['kirimOTP']) {
+      //   _navigator.pushNamed(Constant.kRouteOTPScreen,
+      //       arguments: {'isLogin': _login});
+      // } else {
+      //   // Simpan data user di local storage agar persistent.
+      //   await KreasiSharedPref().simpanDataLokal();
+
+      //   if (kDebugMode) logger.log("MASUK HOME SCREEN");
+      //   // Navigate ke HOME SCREEN
+      //   Future.delayed(gDelayedNavigation).then((_) {
+      //     _navigator.popUntil((route) => route.isFirst);
+      //   });
+      // }
     } catch (e) {
       if (kDebugMode) logger.log('AUTH_SCREEN: ERROR _onClickedMasuk >> $e');
       if (!completer.isCompleted) completer.complete();

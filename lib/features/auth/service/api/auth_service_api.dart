@@ -154,11 +154,12 @@ class AuthServiceApi {
 
     try {
       final response = await dio.post(
-        'http://192.168.20.248:4001/mobile/v1/login/${userType}', // URL sesuai dengan endpoint login Anda
+        'https://auth-service.gobimbelonline.net/mobile/v1/login/${userType}', // URL sesuai dengan endpoint login Anda
         data: {
           'noHP': userPhoneNumber,
           'via': via,
-          'imei': imei,
+          'imei': '6C86438C-4B47-424C-9B2F-FA7A15BA5089'
+          // 'imei': imei,
         },
       );
 
