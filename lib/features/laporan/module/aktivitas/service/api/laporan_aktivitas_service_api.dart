@@ -2,7 +2,9 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class LaporanAktifitasServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   /// [fetchAktifitas] digunakan untuk mengambil data aktivitas dari server.
   ///
@@ -13,12 +15,11 @@ class LaporanAktifitasServiceAPI {
     required String userId,
     required String type,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/log',
-      bodyParams: {'nis': userId, 'type': type},
+    final response = await _apiHelper.dio.get( '/log',
     );
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 }

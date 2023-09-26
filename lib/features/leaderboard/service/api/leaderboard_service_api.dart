@@ -1,5 +1,6 @@
 import 'dart:developer' as logger show log;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/helper/api_helper.dart';
@@ -7,7 +8,9 @@ import '../../../../core/util/app_exceptions.dart';
 
 /// [LeaderboardServiceApi] merupakan service class penghubung provider dengan request api.
 class LeaderboardServiceApi {
-  final _apiHelper = ApiHelper();
+  final _apiHelper = ApiHelper(
+      baseUrl: 'https://leaderboard-service.gobimbelonline.net/api/v1');
+  final Dio dio = Dio();
 
   Future<dynamic> fetchLeaderboardBukuSakti({
     required String noRegistrasi,
@@ -21,29 +24,14 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchLeaderboard: START with '
           'params($noRegistrasi,$idSekolahKelas,$idKota,$idGedung,$tipeJuara,$tahunAjaran)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/leaderboard',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'jenis': 'SISWA',
-        'idSekolahKelas': idSekolahKelas,
-        'penanda': idKota,
-        'idGedung': idGedung,
-        'ta': tahunAjaran,
-        'tipe': tipeJuara.toString(),
-      },
-    );
+    final response = await _apiHelper.dio
+        .post('/leaderboard/', data: {"noreg": noRegistrasi});
 
-    if (kDebugMode) {
-      logger.log('LEADERBOARD_SERVICE_API-FetchLeaderboard: '
-          'Response >> $response');
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
-    }
-
-    return response;
+    return response.data;
   }
 
   Future<dynamic> fetchFirstRankBukuSakti({
@@ -56,24 +44,23 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchFirstRank: START with '
           'params($idSekolahKelas, $idKota, $idGedung, $tahunAjaran)');
     }
-    final response = await _apiHelper.requestPost(
-      jwt: false,
-      pathUrl: '/leaderboard/firstRank',
-      bodyParams: {
-        'idSekolahKelas': idSekolahKelas,
-        'penanda': idKota,
-        'idGedung': idGedung,
-        'tahunAjaran': tahunAjaran,
-      },
-    );
+
+    final response =
+        await _apiHelper.dio.post('/leaderboard/first-rank', data: {
+      "idkelas": int.parse(idSekolahKelas),
+      "idkota": int.parse(idKota),
+      "idgedung": int.parse(idGedung)
+    });
 
     if (kDebugMode) {
       logger.log('LEADERBOARD_SERVICE_API-FetchFirstRank: '
           'response >> $response');
     }
-    // if (!response['status']) throw DataException(message: response['data']);
 
-    return response['data'];
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 
   Future<dynamic> fetchCapaianScoreKamu({
@@ -88,27 +75,15 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchCapaianScoreKamu: START with '
           'params($noRegistrasi, $idSekolahKelas, $tahunAjaran, $userType, $idKota, $idGedung)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/leaderboard/capaian',
-      bodyParams: {
-        'noRegistrasi': noRegistrasi,
-        'ta': tahunAjaran,
-        'idSekolahKelas': idSekolahKelas,
-        'jenis': userType,
-        'penanda': idKota,
-        'idGedung': idGedung,
-      },
+    final response = await _apiHelper.dio.get(
+      '/leaderboard/capaian',
     );
 
-    if (kDebugMode) {
-      logger.log('LEADERBOARD_SERVICE_API-FetchCapaianScoreKamu: '
-          'response >> $response');
-    }
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchHasilPengerjaanSoal({
@@ -120,20 +95,14 @@ class LeaderboardServiceApi {
       logger.log('LEADERBOARD_SERVICE_API-FetchHasilPengerjaanSoal: START with '
           'params($noRegistrasi, $idSekolahKelas, $tahunAjaran)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/capaian/bar',
+    final response = await _apiHelper.dio.get(
+     '/capaian/bar',
       // bodyParams: {
       //   'nis': '050820090601',
       //   'tahunajaran': '2023/2024',
       //   'idSekolahKelas': '13',
       //   'semester': null
       // },
-      bodyParams: {
-        'nis': noRegistrasi,
-        'tahunajaran': tahunAjaran,
-        'idSekolahKelas': idSekolahKelas,
-        'semester': null
-      },
     );
 
     if (kDebugMode) {
@@ -141,10 +110,10 @@ class LeaderboardServiceApi {
           "LEADERBOARD_SERVICE_API-FetchHasilPengerjaanSoal: response >> $response");
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 }

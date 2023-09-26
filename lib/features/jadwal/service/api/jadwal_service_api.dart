@@ -6,7 +6,7 @@ import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class JadwalServiceApi {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(baseUrl: '', authToken: '');
 
   Future<dynamic> fetchJadwal({
     required String noRegistrasi,
@@ -17,42 +17,37 @@ class JadwalServiceApi {
       logger.log(
           'JADWAL_SERVICE_API-FetchJadwal: START with params($noRegistrasi, $userType, $feedbackTime)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/jadwal/siswa',
-      bodyParams: {
-        'jenis': userType,
-        'noRegistrasi': noRegistrasi,
-        'feedbackTime': feedbackTime
-      },
-    );
+    final response = await _apiHelper.dio.get('/jadwal/siswa');
 
     if (kDebugMode) {
       logger.log('JADWAL_SERVICE_API-FetchJadwal: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> setPresensiSiswa(Map<String, dynamic> dataPresensi) async {
     if (kDebugMode) {
-      logger.log(
-          'JADWAL_SERVICE_API-SetPresensiSiswa: START with params$dataPresensi');
+      final response = await _apiHelper.dio.post(
+        '/jadwal/student/hadirjwt',
+        data: dataPresensi,
+      );
+
+      if (kDebugMode) {
+        logger
+            .log('JADWAL_SERVICE_API-SetPresensiSiswa: response >> $response');
+      }
+
+      if (response.data['meta']['code'] != 200) {
+        throw DataException(message: response.data['meta']['message']);
+      }
+
+      return response.data['meta']['message'];
     }
-
-    final response = await _apiHelper.requestPost(
-      bodyParams: dataPresensi,
-      pathUrl: '/jadwal/student/hadirjwt',
-    );
-
-    if (kDebugMode) {
-      logger.log('JADWAL_SERVICE_API-SetPresensiSiswa: response >> $response');
-    }
-
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['message'];
   }
 
   Future<dynamic> setPresensiSiswaTst(Map<String, dynamic> dataPresensi) async {
@@ -61,18 +56,17 @@ class JadwalServiceApi {
           'JADWAL_SERVICE_API-SetPresensiSiswaTST: START with params$dataPresensi');
     }
 
-    final response = await _apiHelper.requestPost(
-      bodyParams: dataPresensi,
-      jwt: true,
-      pathUrl: '/jadwal/student/hadir/tstjwt',
-    );
+    final response = await _apiHelper.dio
+        .post('/jadwal/student/hadir/tstjwt', data: dataPresensi);
 
     if (kDebugMode) {
       logger
           .log('JADWAL_SERVICE_API-SetPresensiSiswaTST: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-    return response['message'];
+    if (response.data['meta']['code']) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['meta']['message'];
   }
 }

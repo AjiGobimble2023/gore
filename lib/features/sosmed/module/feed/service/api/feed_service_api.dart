@@ -6,69 +6,75 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class FeedServiceApi {
-  final _apiHelper = ApiHelper();
+  final _apiHelper = ApiHelper(baseUrl: '');
 
   Future<dynamic> fetchFeed(String userId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed",
-      bodyParams: {"userId": userId},
+    final response = await _apiHelper.dio.get(
+      "/feed/$userId",
     );
-    return response['data'];
+
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 
   Future<dynamic> fetchMoreFeed(
       String userId, String accessDate, int lastIndex) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/more",
-      bodyParams: {
-        "userId": userId,
-        "accessDate": accessDate,
-        "lastIndex": lastIndex
-      },
+    final response = await _apiHelper.dio.get(
+      "/feed/more/$userId/$lastIndex",
     );
     if (kDebugMode) {
       logger.log("cek data $userId $accessDate $lastIndex");
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<void> responseFeed(String userId, String feedId, String type) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/response",
-      bodyParams: {"userId": userId, "feedId": feedId, "type": type},
+    final response = await _apiHelper.dio.post(
+      "/feed/response",
+      data: {"userId": userId, "feedId": feedId, "type": type},
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> deleteFeed(String feedId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/status/deletefeed",
-      bodyParams: {"feedId": feedId},
+    final response = await _apiHelper.dio.delete(
+      "/feed/status/deletefeed/$feedId",
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> setFeedPrivat(String feedId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/status/setfeedprivat",
-      bodyParams: {"feedId": feedId},
+    final response = await _apiHelper.dio.post(
+      "/feed/status/setfeedprivat",
+      data: {"feedId": feedId},
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> setFeedPublik(String feedId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/status/setfeedpublik",
-      bodyParams: {"feedId": feedId},
+    final response = await _apiHelper.dio.post(
+      "/feed/status/setfeedpublik",
+      data: {"feedId": feedId},
     );
-
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> saveFeed(
@@ -77,9 +83,9 @@ class FeedServiceApi {
       String? empatiId,
       String? file64,
       String? content}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/feed/upload',
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+      '/feed/upload',
+      data: {
         'nis': userId,
         'tob': tob,
         'kodeEmpati': empatiId,
@@ -88,25 +94,26 @@ class FeedServiceApi {
       },
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<dynamic> fetchComment(String userId, String feedId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/comment",
-      bodyParams: {"userId": userId, "feedId": feedId},
+    final response = await _apiHelper.dio.get(
+      "/feed/comment/$userId/$feedId",
     );
     if (kDebugMode) {
-      logger.log("response Reply ${response['reply']}");
+      logger.log("response Reply ${response.data['reply']}");
     }
-    return response;
+    return response.data;
   }
 
   Future<void> saveComment(
       String userId, String feedId, String feedCreator, String text) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/comment/add",
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+      "/feed/comment/add",
+      data: {
         "userId": userId,
         "feedId": feedId,
         "feedCreator": feedCreator,
@@ -114,15 +121,18 @@ class FeedServiceApi {
       },
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> deleteComment(String feedId) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feed/comment/delete",
-      bodyParams: {"feedId": feedId},
+    final response = await _apiHelper.dio.delete(
+      "/feed/comment/delete/$feedId",
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 }

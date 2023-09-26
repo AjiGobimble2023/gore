@@ -6,20 +6,19 @@ import '../../../../../core/helper/api_helper.dart';
 import '../../../../../core/util/app_exceptions.dart';
 
 class PaketSoalServiceApi {
-  final _apiHelper = ApiHelper();
+  final _apiHelper = ApiHelper(baseUrl: '');
 
   Future<List<dynamic>> fetchDaftarTOBBersyarat({
     required String kodePaket,
   }) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-      pathUrl: '/bukusoal/prasyarat/$kodePaket',
+    final response = await _apiHelper.dio.get(
+      '/bukusoal/prasyarat/$kodePaket',
     );
-
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<List<dynamic>> fetchDaftarPaketSoal({
@@ -29,37 +28,31 @@ class PaketSoalServiceApi {
     required String roleTeaser,
     required bool isProdukDibeli,
   }) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: noRegistrasi != null,
-        pathUrl: '/bukusoal/paket/basic/$idJenisProduk',
-        bodyParams: {
-          'noRegistrasi': noRegistrasi,
-          'teaserRole': roleTeaser,
-          'idSekolahKelas': idSekolahKelas,
-          'diBeli': isProdukDibeli,
-        });
+    final response = await _apiHelper.dio.get(
+      '/bukusoal/paket/basic/$idJenisProduk',
+    );
 
     if (kDebugMode) {
       logger.log(
           'PAKET_SOAL_SERVICE_API-FetchDaftarPaket: response >> $response');
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<List<dynamic>> fetchDaftarSoal(
       {bool isJWT = true, required String kodePaket}) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: isJWT, pathUrl: '/bukusoal/soal/paket/$kodePaket');
+    final response =
+        await _apiHelper.dio.get('/bukusoal/soal/paket/$kodePaket');
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 }

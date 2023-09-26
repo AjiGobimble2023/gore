@@ -6,12 +6,13 @@ import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class PembayaranServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<dynamic> fetchPembayaran({required String noRegistrasi}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/pembayaran/info',
-      bodyParams: {'nis': noRegistrasi},
+    final response = await _apiHelper.dio.get(
+     '/pembayaran/info',
     );
 
     if (kDebugMode) {
@@ -19,24 +20,23 @@ class PembayaranServiceAPI {
           .log('PEMBAYARAN_SERVICE_API-FetchPembayaran: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response;
+    return response.data;
   }
 
   Future<dynamic> fetchDetailPembayaran({required String noRegistrasi}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/pembayaran/infodetail',
-      bodyParams: {'nis': noRegistrasi},
+    final response = await _apiHelper.dio.get(
+    '/pembayaran/infodetail'
     );
 
-    if (kDebugMode) {
-      logger.log(
-          'PEMBAYARAN_SERVICE_API-FetchDetailPembayaran: response >> $response');
+
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 }

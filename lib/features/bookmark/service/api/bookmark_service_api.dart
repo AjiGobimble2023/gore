@@ -1,45 +1,61 @@
 import 'dart:convert';
 import 'dart:developer' as logger show log;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-
-import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 import '../../entity/bookmark.dart';
 
 class BookmarkServiceAPI {
-  final _apiHelper = ApiHelper();
+  final Dio dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 60),
+    receiveTimeout: const Duration(seconds: 60),
+    baseUrl:
+        'https://data-service.gobimbelonline.netmobile/v1/api', //ganti sesuai service
+  ));
+
+  final Map<String, dynamic> headers = {
+    'Authorization': 'Bearer YourAuthTokenHere',
+  };
 
   Future<dynamic> fetchBookmark({required String noRegistrasi}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/bookmark/shortcut',
-      bodyParams: {'nis': noRegistrasi},
-    );
+    try{
+    final response =
+        await dio.get('/bookmark/shortcut', options: Options(headers: headers));
 
     if (kDebugMode) {
       logger.log("BOOKMARK_SERVICE_API-FetchBookmark: response >> $response");
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
+    } catch (e) {
+      throw DataException(message: e.toString());
+    }
   }
 
   Future<bool> updateBookmark(
       {required String noRegistrasi,
       required List<BookmarkMapel> daftarBookmark}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/bookmark/save',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'bookmark': jsonEncode(daftarBookmark),
-      },
-    );
+    try {
+      final response = await dio.post('/bookmark/save',
+          data: {
+            'nis': noRegistrasi,
+            'bookmark': jsonEncode(daftarBookmark),
+          },
+          options: Options(headers: headers));
 
-    if (kDebugMode) {
-      logger.log("BOOKMARK_SERVICE_API-UpdateBookmark: response >> $response");
+      if (kDebugMode) {
+        logger
+            .log("BOOKMARK_SERVICE_API-UpdateBookmark: response >> $response");
+      }
+
+      return response.data['status'];
+    } catch (e) {
+      throw DataException(message: e.toString());
     }
-
-    return response['status'];
   }
 }

@@ -5,24 +5,24 @@ import '../../../../core/util/app_exceptions.dart';
 
 /// [KehadiranServiceApi] merupakan service class penghubung provider dengan request api.
 class KehadiranServiceApi {
-  final _apiHelper = ApiHelper();
+  final _apiHelper = ApiHelper(
+    baseUrl: '',
+    authToken: ''
+  );
 
   Future<dynamic> fetchKehadiranMingguIni({
     required String noRegistrasi,
   }) async {
-    var response = await _apiHelper.requestPost(
-      pathUrl: '/presence/getkehadiran',
-      bodyParams: {'nis': noRegistrasi},
-    );
+    var response = await _apiHelper.dio.get('/presence/getkehadiran');
 
-    if (response is String) {
-      response = jsonDecode(response);
+    if (response.data is String) {
+      response = jsonDecode(response.data);
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 }

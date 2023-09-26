@@ -24,8 +24,8 @@ class LeaderboardRankModel extends Equatable {
   bool get isBigFive => rank > 0 && rank <= 5;
 
   factory LeaderboardRankModel.fromJson(Map<String, dynamic> json) => LeaderboardRankModel(
-        noRegistrasi: json['id'],
-        namaLengkap: json['fullName'],
+        noRegistrasi: json['noregistrasi'],
+        namaLengkap: json['namalengkap'],
         level: json['level'],
         sort: json['sort'],
         rank: int.parse(json['rank']),

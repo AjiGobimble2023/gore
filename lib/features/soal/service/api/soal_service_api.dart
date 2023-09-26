@@ -6,7 +6,7 @@ import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class SoalServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(baseUrl: '');
 
   static final SoalServiceAPI _instance = SoalServiceAPI._internal();
 
@@ -27,9 +27,9 @@ class SoalServiceAPI {
     required int jumlahSoal,
     required List<Map<String, dynamic>> detailJawaban,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/bukusoal/simpanjawabanV2',
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+      '/bukusoal/simpanjawabanV2',
+      data: {
         'nis': noRegistrasi,
         'role': tipeUser,
         'idsekolahkelas': idSekolahKelas,
@@ -44,7 +44,7 @@ class SoalServiceAPI {
       },
     );
 
-    return response['status'];
+    return response.data['status'];
   }
 
   Future<dynamic> fetchSolusi({required String idSoal}) async {
@@ -52,29 +52,27 @@ class SoalServiceAPI {
       logger.log('SOAL_SERVICE_API-FetchSolusi: START with params($idSoal)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/solusi/getsolusi',
-      bodyParams: {'idsoal': idSoal},
+    final response = await _apiHelper.dio.get(
+      '/solusi/getsolusi/$idSoal',
     );
 
-    if (kDebugMode) {
-      logger.log('SOAL_SERVICE_API-FetchSolusi: response $idSoal >> $response');
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchVideoSolusi({required String idVideo}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/solusi/getvideo',
-      bodyParams: {'idvideo': idVideo},
+    final response = await _apiHelper.dio.get(
+      '/solusi/getvideo/$idVideo',
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<List<dynamic>> fetchSobatTips({
@@ -84,18 +82,15 @@ class SoalServiceAPI {
     required bool isBeliSingkat,
     required bool isBeliRingkas,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/solusi/tips/$idBundel/$idSoal',
-      bodyParams: {
-        'isBeliLengkap': isBeliLengkap,
-        'isBeliSingkat': isBeliSingkat,
-        'isBeliRingkas': isBeliRingkas,
-      },
+    final response = await _apiHelper.dio.get(
+      '/solusi/tips/$idBundel/$idSoal',
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<List<dynamic>> fetchDetailHasilJawaban({
@@ -105,16 +100,14 @@ class SoalServiceAPI {
     required String kodePaket,
     required int jumlahSoal,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl:
-          '/bukusoal/hasil/$jenisHasil/$kodePaket/$idSekolahKelas/$noRegistrasi',
-      bodyParams: {'jumlahSoal': jumlahSoal},
+    final response = await _apiHelper.dio.get(
+      '/bukusoal/hasil/$jenisHasil/$kodePaket/$idSekolahKelas/$noRegistrasi',
     );
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['meta']['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 }

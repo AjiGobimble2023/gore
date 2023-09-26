@@ -6,7 +6,9 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class LaporanPresensiServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   /// [fetchPresensi] digunakan untuk mengambil data kehadiran siswa.
   ///
@@ -15,16 +17,14 @@ class LaporanPresensiServiceAPI {
   Future<dynamic> fetchPresensi({
     required String userId,
   }) async {
-    final response = await _apiHelper.requestPost(
-      bodyParams: {'noregistrasi': userId},
-      pathUrl: '/presence/student',
+    final response = await _apiHelper.dio.get(
+       '/presence/student',
     );
-    if (kDebugMode) {
-      logger.log("response : $response");
+
+  if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 }

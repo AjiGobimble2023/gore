@@ -15,8 +15,7 @@ import '../../../../../core/helper/hive_helper.dart';
 import '../../../../../core/util/app_exceptions.dart';
 
 class TOBServiceApi {
-  final _apiHelper = ApiHelper();
-  final dio = Dio();
+  final _apiHelper = ApiHelper(baseUrl: '');
 
   static final TOBServiceApi _instance = TOBServiceApi._internal();
 
@@ -31,24 +30,20 @@ class TOBServiceApi {
     required String roleTeaser,
     required bool isProdukDibeli,
   }) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: noRegistrasi != null,
-        pathUrl: '/tryout/$idJenisProduk',
-        bodyParams: {
-          'noRegistrasi': noRegistrasi,
-          'teaserRole': roleTeaser,
-          'idSekolahKelas': idSekolahKelas,
-          'diBeli': isProdukDibeli,
-        });
+    final  response = await _apiHelper.dio.get(
+        '/tryout/$idJenisProduk',
+        );
 
     if (kDebugMode) {
       logger.log('TOB_SERVICE_API-FetchDaftarTOB: response >> $response');
     }
 
-    if (response['meta']['code'] != 200)
-      throw DataException(message: response['message']);
+   
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<Map<String, dynamic>> cekBolehTO({
@@ -56,16 +51,15 @@ class TOBServiceApi {
     required String kodeTOB,
     required String namaTOB,
   }) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-      pathUrl: '/tryout/syarat/$kodeTOB/$noRegistrasi',
-      bodyParams: {'namaTOB': namaTOB},
+    final  response = await _apiHelper.dio.get(
+     '/tryout/syarat/$kodeTOB/$noRegistrasi',
+
     );
-
-    if (kDebugMode) {
-      logger.log('TOB_SERVICE_API-CekBolehTO: response >> $response');
+    
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
-
-    return response;
+    return response.data;
   }
 
   /// Jika User belum login, maka [noRegistrasi] diisi dengan imei device.
@@ -78,45 +72,42 @@ class TOBServiceApi {
     bool isProdukDibeli = false,
     required bool isTryout,
   }) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-      pathUrl: isTryout
+    final response = await _apiHelper.dio.get(
+      isTryout
           ? '/tryout/paket/$kodeTOB'
           : '/bukusoal/paket/timer/$idJenisProduk',
-      bodyParams: isTryout
-          ? {'noRegistrasi': noRegistrasi}
-          : {
-              'noRegistrasi': noRegistrasi,
-              'teaserRole': teaserRole,
-              'idSekolahKelas': idSekolahKelas,
-              'diBeli': isProdukDibeli,
-            },
     );
 
-    // if (response['meta']['code'] != 200) throw DataException(message: response['meta']['message']);
+   
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<List<dynamic>> fetchKisiKisi({required String kodePaket}) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        pathUrl: '/tryout/kisikisipaket', bodyParams: {'kodepaket': kodePaket});
+    final response = await _apiHelper.dio.get(
+         '/tryout/kisikisipaket/$kodePaket',);
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+   
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<List<dynamic>> fetchDetailWaktu({required String kodePaket}) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        pathUrl: '/tryout/detailwaktu', bodyParams: {'kodepaket': kodePaket});
+    final  response = await _apiHelper.dio.get(
+         '/tryout/detailwaktu/$kodePaket',);
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['message']);
+   
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   /// [isRemedialGOA] menandakan GOA ini remedial atau tidak, untuk selain GOA isi dengan false.<br>
@@ -207,14 +198,16 @@ class TOBServiceApi {
               });
     }
 
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        pathUrl: '/tryout/daftarsoalto', bodyParams: params);
+    final response = await _apiHelper.dio.post(
+        '/tryout/daftarsoalto', data: params);
 
-    if (response['meta']['code'] != 200)
-      throw DataException(message: response['message']);
+   
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
     return {
-      'sisaWaktu': response['sisawaktu'],
-      'data': response['data'] ?? [],
+      'sisaWaktu': response.data['sisawaktu'],
+      'data': response.data['data'] ?? [],
     };
   }
 
@@ -265,12 +258,12 @@ class TOBServiceApi {
                 });
       }
 
-      final Map<String, dynamic> response = await _apiHelper.requestPost(
-        pathUrl: '/tryout/peserta/update',
-        bodyParams: params,
+      final response = await _apiHelper.dio.post(
+        '/tryout/peserta/update',
+        data: params,
       );
 
-      return response['status'];
+      return response.data['meta']['code'] == 200;
     } catch (e) {
       if (kDebugMode) {
         logger.log('TOB_SERVICE_API-UpdatePesertaTO: $e');
@@ -350,16 +343,16 @@ class TOBServiceApi {
     }
 
     // idJenisProduk 12 adalah e-GOA
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        pathUrl: '/${(idJenisProduk == 12) ? 'profiling' : 'tryout'}'
+    final response = await _apiHelper.dio.post(
+       '/${(idJenisProduk == 12) ? 'profiling' : 'tryout'}'
             '/simpanjawaban',
-        bodyParams: params);
+       data: params);
 
     if (kDebugMode) {
       logger.log('Kumpulkan Jawaban TO-GOA response >> $response');
     }
 
-    return response['status'];
+    return response.data['meta']['code'] == 200;
   }
 
   Future<dynamic> fetchLaporanGOA({
@@ -367,15 +360,11 @@ class TOBServiceApi {
     required String kodePaket,
   }) async {
     // idJenisProduk 12 adalah e-GOA
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: noRegistrasi != null,
-        pathUrl: '/profiling/laporanlulus',
-        bodyParams: {
-          'nis': noRegistrasi,
-          'kodepaket': kodePaket,
-        });
+    final response = await _apiHelper.dio.get(
+        '/profiling/laporanlulus/$kodePaket',
+       );
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> storeJawabanSIswa(
@@ -383,13 +372,13 @@ class TOBServiceApi {
       required String idSekolahKelas,
       required DetailJawaban jawaban}) async {
     // idJenisProduk 12 adalah e-GOA
-    final Map<String, dynamic> response =
-        await _apiHelper.requestPost(pathUrl: '/store/jawaban', bodyParams: {
+    final response =
+        await _apiHelper.dio.post('/store/jawaban',data: {
       'tahunAjaran': tahunAjaran,
       'idSekolahKelas': idSekolahKelas,
       'jawabanSiswa': jsonEncode(jawaban)
     });
 
-    return response['data'];
+    return response.data['data'];
   }
 }

@@ -1,14 +1,25 @@
-// import 'dart:convert';
 import 'dart:developer' as logger show log;
-
-// import 'package:http/http.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-
-import '../../../../core/helper/api_helper.dart';
+import 'package:gokreasi_new/core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class BukuServiceAPI {
-  final _apiHelper = ApiHelper();
+  // final Dio dio = Dio(BaseOptions(
+  //   connectTimeout: const Duration(seconds: 60),
+  //   receiveTimeout: const Duration(seconds: 60),
+  //   baseUrl:
+  //       'https://data-service.gobimbelonline.netmobile/v1/api', //ganti sesuai service
+  // ));
+
+  // final Map<String, dynamic> headers = {
+  //   'Authorization': 'Bearer YourAuthTokenHere',
+  // };
+
+final apiHelper = ApiHelper(
+  baseUrl: 'https://data-service.gobimbelonline.net/mobile/v1/api',
+  authToken: 'YourAuthTokenHere', 
+);
 
   Future<List> fetchDaftarBuku({
     String? noRegistrasi,
@@ -23,9 +34,9 @@ class BukuServiceAPI {
           '$idSekolahKelas, $roleTeaser, $isProdukDibeli)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/14.06.23/buku/$jenisBuku',
-      bodyParams: {
+    final response = await apiHelper.dio.get(
+    '/14.06.23/buku/$jenisBuku',
+      data: {
         'noRegistrasi': noRegistrasi,
         'teaserRole': roleTeaser,
         'idSekolahKelas': idSekolahKelas,
@@ -37,9 +48,9 @@ class BukuServiceAPI {
       logger.log('BUKU_SERVICE_API-FetchBuku: response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] !=200) throw DataException(message: response.data['meta']['message']);
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<List> fetchDaftarBab({
@@ -48,29 +59,16 @@ class BukuServiceAPI {
     required String kelengkapan,
     required String levelTeori,
   }) async {
-    if (kDebugMode) {
-      logger.log(
-          'BUKU_SERVICE_API-FetchDaftarBab: START params(KodeBuku: $kodeBuku, '
-          'kelengkapan: $kelengkapan, levelteori: $levelTeori)');
-    }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/buku/bab/$kodeBuku',
-      bodyParams: {
+    final response = await apiHelper.dio.get(
+     '/buku/bab/$kodeBuku',
+      data: {
         'kelengkapan': kelengkapan,
         'levelTeori': levelTeori,
       },
     );
-    if (kDebugMode) {
-      logger.log("Response-FetchDaftarBab: $response");
-    }
+    if (response.data['meta']['code'] != 200) throw DataException(message: response.data['meta']['message']);
 
-    if (kDebugMode) {
-      logger.log('BUKU_SERVICE_API-FetchDaftarBab: response >> $response');
-    }
-
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 
   Future<dynamic> fetchContent({required String idTeoriBab}) async {
@@ -79,16 +77,12 @@ class BukuServiceAPI {
           'BUKU_SERVICE_API-FetchContent: START params(idTeoriBab: $idTeoriBab)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/buku/content/$idTeoriBab',
+    final response = await apiHelper.dio.get(
+       '/buku/content/$idTeoriBab',
     );
 
-    if (kDebugMode) {
-      logger.log('BUKU_SERVICE_API-FetchContent: response >> $response');
-    }
+    if (response.data['meta']['code']!=200) throw DataException(message: response.data['meta']['message']);
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 }

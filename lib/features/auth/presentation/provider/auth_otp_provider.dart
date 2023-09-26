@@ -841,7 +841,6 @@ class AuthOtpProvider with ChangeNotifier {
       if (imei == null) mapHasil['pesan'] = gPesanErrorImeiPermission;
 
       if (imei != null) {
-        print('hahaha${userTypeRefresh}');
         final responseLogin = await _apiService.login(
           userPhoneNumber: this.nomorHp,
           otp: otp,
@@ -1263,12 +1262,12 @@ class AuthOtpProvider with ChangeNotifier {
     try {
       // Mengambil data tahun ajaran default
       if (_tahunAjaran == null) {
-        final responseData = await _apiService.fetchDefaultTahunAjaran();
-        _tahunAjaran = responseData;
+        // final responseData = await _apiService.fetchDefaultTahunAjaran();
+        // _tahunAjaran = responseData;
 
         if (kDebugMode) {
-          logger.log(
-              'AUTH_OTP_PROVIDER-GetDefaultTahunAjaran: response data >> $responseData');
+          // logger.log(
+          //     'AUTH_OTP_PROVIDER-GetDefaultTahunAjaran: response data >> $responseData');
           logger.log(
               'AUTH_OTP_PROVIDER-GetDefaultTahunAjaran: Tahun Ajaran >> $_tahunAjaran');
         }

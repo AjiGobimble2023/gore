@@ -2,30 +2,30 @@ import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class FeedbackServiceApi {
-  final ApiHelper _apiHelper = ApiHelper();
+  final apiHelper = ApiHelper(
+  baseUrl: 'https://data-service.gobimbelonline.net/mobile/v1/api',
+  authToken: 'YourAuthTokenHere', 
+);
 
   Future<dynamic> fetchFeedbackQuestion({
     required String userId,
     required String idRencana,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: "/feedback/question",
-      bodyParams: {'userId': userId, 'idRencana': idRencana},
-    );
+    final response = await apiHelper.dio.get("/feedback/question/$userId/$idRencana");
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code']) throw DataException(message: response.data['meta']['message']);
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<void> setFeedback({
     required Map<String, dynamic> params,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/2109/feedback/save',
-      bodyParams: params,
+    final response = await apiHelper.dio.post(
+      '/2109/feedback/save',
+      data: params,
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (!response.data['meta']['code']) throw DataException(message: response.data['meta']['message']);
   }
 }

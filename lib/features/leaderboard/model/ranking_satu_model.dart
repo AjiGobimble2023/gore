@@ -13,18 +13,18 @@ class RankingSatuModel {
     this.photoUrl,
   });
 
-  factory RankingSatuModel.fromJson(Map<String, dynamic> json) =>
-      RankingSatuModel(
-          noRegistrasi: json['noRegistrasi'],
-          namaLengkap: json['namaLengkap'],
-          score: json['score'],
-          tipe: json['tipe'],
-          photoUrl: json['url']);
+  factory RankingSatuModel.fromJson(Map<String, dynamic> json) => RankingSatuModel(
+      noRegistrasi: json['noregistrasi'],
+      namaLengkap: (json['namalengkap'] as String).substring(0, 6),
+      score: json['total'],
+      tipe: json['tipe'],
+      photoUrl:
+          'https://firebasestorage.googleapis.com/v0/b/kreasi-f1f7b.appspot.com/o/avatar%2Fg-4.png?alt=media&token=8bfb2b14-2d49-4d7a-9917-a6966c88773a');
 
   Map<String, dynamic> toJson() => {
-        'noRegistrasi': noRegistrasi,
-        'namaLengkap': namaLengkap,
-        'score': score,
+        'noregistrasi': noRegistrasi,
+        'namalengkap': namaLengkap,
+        'total': score,
         'tipe': tipe,
         'url': photoUrl
       };

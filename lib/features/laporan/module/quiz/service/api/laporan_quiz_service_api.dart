@@ -6,7 +6,9 @@ import 'package:gokreasi_new/core/util/app_exceptions.dart';
 import '../../../../../../core/helper/api_helper.dart';
 
 class LaporanKuisServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<Map<String, dynamic>> fetchLaporanKuis({
     required String noRegistrasi,
@@ -17,23 +19,16 @@ class LaporanKuisServiceAPI {
       logger.log('LAPORAN_SERVICE_API-FetchLaporanKuis: START with '
           'params($noRegistrasi, $idSekolahKelas, $tahunAjaran)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/getlaporankuis',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'idsekolahkelas': idSekolahKelas,
-        'tahunajaran': tahunAjaran,
-      },
-    );
+    final response = await _apiHelper.dio.get('/getlaporankuis');
     if (kDebugMode) {
       logger.log('LAPORAN_SERVICE_API-FetchLaporanKuis: Response >> $response');
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['meta']['message']);
+   if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response;
+    return response.data;
   }
 
   Future<Map<String, dynamic>> fetchLaporanJawabanKuis(
@@ -45,18 +40,14 @@ class LaporanKuisServiceAPI {
       logger.log('LAPORAN_SERVICE_API-FetchLaporanKuis: START with '
           'params($noRegistrasi, $idSekolahKelas, $tahunAjaran)');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/getlaporankuis/$kodequiz',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'idsekolahkelas': idSekolahKelas,
-        'tahunajaran': tahunAjaran,
-      },
+    final response = await _apiHelper.dio.get(
+      '/getlaporankuis/$kodequiz'
     );
-    if (kDebugMode) {
-      logger.log('LAPORAN_SERVICE_API-FetchLaporanKuis: Response >> $response');
+
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response;
+    return response.data;
   }
 }

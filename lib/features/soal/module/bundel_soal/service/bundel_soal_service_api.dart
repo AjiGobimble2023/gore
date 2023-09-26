@@ -7,7 +7,7 @@ import '../../../../../core/util/app_exceptions.dart';
 import '../entity/bundel_soal.dart';
 
 class BundelSoalServiceApi {
-  final _apiHelper = ApiHelper();
+  final _apiHelper = ApiHelper(baseUrl: '');
 
   Future<List<dynamic>> fetchDaftarBundel({
     String? noRegistrasi,
@@ -19,37 +19,31 @@ class BundelSoalServiceApi {
     if (kDebugMode) {
       logger.log('BUNDEL_SOAL_SERVICE_API-FetchDaftarBundel: START');
     }
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: noRegistrasi != null,
-        pathUrl: '/bukusoal/bundel/$idJenisProduk',
-        bodyParams: {
-          'noRegistrasi': noRegistrasi,
-          'teaserRole': roleTeaser,
-          'idSekolahKelas': idSekolahKelas,
-          'diBeli': isProdukDibeli,
-        });
+    final response =
+        await _apiHelper.dio.get('/bukusoal/bundel/$idJenisProduk');
 
     if (kDebugMode) {
       logger.log(
           'BUNDEL_SOAL_SERVICE_API-FetchDaftarBundel: response >> $response');
     }
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['meta']['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<List<dynamic>> fetchDaftarBabSubBab(
       {required bool isJWT, required String idBundel}) async {
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-        jwt: isJWT, pathUrl: '/bukusoal/bab/$idBundel');
+    final response = await _apiHelper.dio.get('/bukusoal/bab/$idBundel');
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['meta']['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
-
-    return response['data'];
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 
   Future<List<dynamic>> fetchDaftarSoal({
@@ -58,21 +52,16 @@ class BundelSoalServiceApi {
     required String idBundel,
     required OpsiUrut opsiUrut,
   }) async {
-    String pathUrl = '/bukusoal/soal/${opsiUrut.name}/$idBundel';
-    if (kDebugMode) {
-      logger.log('BUNDEL_SOAL_SERVICE_API-FetchDaftarSoal: START with '
-          'params(KodeBab: $kodeBab, IdBundel: $idBundel, OpsiUrut: $opsiUrut)');
-    }
-    final Map<String, dynamic> response = await _apiHelper.requestPost(
-      jwt: isJWT,
-      pathUrl: pathUrl,
-      bodyParams: (opsiUrut == OpsiUrut.bab) ? {'kodeBab': kodeBab} : null,
+    
+    final response = await _apiHelper.dio.get(
+      '/bukusoal/soal/${opsiUrut.name}/$idBundel'
+     
     );
 
-    if (response['meta']['code'] != 200) {
-      throw DataException(message: response['meta']['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'] ?? [];
+    return response.data['data'] ?? [];
   }
 }

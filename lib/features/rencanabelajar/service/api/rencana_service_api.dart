@@ -2,6 +2,7 @@
 import 'dart:developer' as logger show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:gokreasi_new/core/util/app_exceptions.dart';
 
 import '../../../../core/helper/api_helper.dart';
 
@@ -9,7 +10,9 @@ import '../../../../core/helper/api_helper.dart';
 // $route['v4/rencanabelajar/list/rencana'] = 'v4/rencanabelajar_controller/getListRencanaBelajar';
 // $route['v4/rencanabelajar/simpanrencanabelajar'] = 'v4/rencanabelajar_controller/simpanrencanabelajar';
 class RencanaBelajarServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<Map<String, dynamic>> fetchListMenu() async {
     if (kDebugMode) {
@@ -17,15 +20,15 @@ class RencanaBelajarServiceAPI {
     }
     Map<String, Object> result;
     try {
-      final response = await _apiHelper.requestPost(
-        pathUrl: '/rencanabelajar/list/menu',
+      final response = await _apiHelper.dio.get(
+       '/rencanabelajar/list/menu',
       );
 
-      if (kDebugMode) {
-        logger.log('RENCANA_SERVICE_API-FetchListMenu: Response >> $response');
-      }
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-      return response;
+      return response.data;
     } on Exception catch (e) {
       if (kDebugMode) {
         logger.log('Exception-FetchListMenu: $e');
@@ -50,19 +53,15 @@ class RencanaBelajarServiceAPI {
     }
     Map<String, Object> result;
     try {
-      var response = await _apiHelper.requestPost(
-        pathUrl: '/rencanabelajar/list/rencana',
-        bodyParams: {
-          'noRegistrasi': noRegistrasi,
-        },
+      var response = await _apiHelper.dio.get(
+         '/rencanabelajar/list/rencana',
       );
 
-      if (kDebugMode) {
-        logger.log(
-            'RENCANA_SERVICE_API-FetchDataRencanaBelajar: Response >> $response');
-      }
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-      return response;
+      return response.data;
     } on Exception catch (_) {
       result = {'status': false, 'message': "Terjadi kesalahan"};
     } catch (error) {
@@ -91,9 +90,9 @@ class RencanaBelajarServiceAPI {
     Map<String, dynamic> result;
 
     try {
-      final response = await _apiHelper.requestPost(
-        pathUrl: '/rencanabelajar/simpan',
-        bodyParams: {
+      final response = await _apiHelper.dio.post(
+        '/rencanabelajar/simpan',
+        data: {
           'noRegistrasi': noRegistrasi,
           'idRencana': idRencana,
           'menu': menu,
@@ -105,11 +104,11 @@ class RencanaBelajarServiceAPI {
         },
       );
 
-      if (kDebugMode) {
-        logger.log('RENCANA_SERVICE_API-SimpanRencanaBelajar: $response');
-      }
+       if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-      return response;
+      return response.data;
     } on Exception catch (e) {
       if (kDebugMode) {
         logger.log('Exception-SimpanRencanaBelajar: $e');
@@ -125,29 +124,5 @@ class RencanaBelajarServiceAPI {
     return result;
   }
 
-  // Future<Map<String, dynamic>> hapusrencana({
-  //   required String id,
-  // }) async {
-  //   Map<String, dynamic> result;
-  //   Map<String, dynamic> kirim = {
-  //     'id': id,
-  //   };
-  //   try {
-  //     final response = await _apiHelper.requestPost(
-  //       pathUrl: 'hapus_rencana_belajar',
-  //       bodyParams: kirim,
-  //     );
-  //     if (response['status']) {
-  //       result = {'status': true, 'data': response['data']};
-  //     } else {
-  //       result = {'status': false, 'data': null};
-  //     }
-  //   } on Exception catch (_) {
-  //     result = {'status': false, 'message': "Terjadi kesalahan"};
-  //   } catch (error) {
-  //     result = {'status': false, 'message': error};
-  //   }
-  //
-  //   return result;
-  // }
+
 }

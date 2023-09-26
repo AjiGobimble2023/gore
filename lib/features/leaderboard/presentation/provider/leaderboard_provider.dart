@@ -158,13 +158,13 @@ class LeaderboardProvider extends DisposableProvider {
       var rankKey = (tipeJuara == 0)
           ? 'gedung'
           : (tipeJuara == 1)
-              ? 'city'
-              : 'national';
+              ? 'kota'
+              : 'nasional';
 
       // Data Ranking topFive dan terdekat dari API.
       final Map<String, dynamic>? dataRanking =
-          response['data'].containsKey(rankKey)
-              ? response['data'][rankKey]
+          response['data']['combinedResponseBukuSakti'].containsKey(rankKey)
+              ? response['data']['combinedResponseBukuSakti'][rankKey]
               : null;
 
       if (kDebugMode) {
@@ -174,7 +174,7 @@ class LeaderboardProvider extends DisposableProvider {
             'LEADERBOARD_PROVIDER-LoadLeaderboardBukuSakti: Data Ranking >> $dataRanking');
       }
 
-      _pesan = response['data']['pesan'];
+      _pesan = '*Rangking dan skor diupdate pada 12 July 2023 10:00 WIB';
       _pesanError =
           response['meta']['code'] == 200 ? null : response['meta']['message'];
 
@@ -243,19 +243,20 @@ class LeaderboardProvider extends DisposableProvider {
         logger.log(
             "LEADERBOARD_PROVIDER-GetFirstRank: response >> $responseData");
       }
+      print(responseData);
       List<dynamic> body = responseData;
       List<RankingSatuModel> list =
           body.map((dynamic item) => RankingSatuModel.fromJson(item)).toList();
       // Reverse list juara.
       // list = list.reversed.toList();
       // Menambahkan Empty Juara kalau data tidak tersedia.
-      if (!list.any((juara) => juara.tipe == "Nasional")) {
+      if (!list.any((juara) => juara.tipe == "nasional")) {
         list.insert(0, UndefinedRankingSatu(tipe: 'Nasional'));
       }
-      if (!list.any((juara) => juara.tipe == "Kota")) {
+      if (!list.any((juara) => juara.tipe == "kota")) {
         list.insert(1, UndefinedRankingSatu(tipe: 'Kota'));
       }
-      if (!list.any((juara) => juara.tipe == "Gedung")) {
+      if (!list.any((juara) => juara.tipe == "gedung")) {
         list.insert(2, UndefinedRankingSatu(tipe: 'Gedung'));
       }
 

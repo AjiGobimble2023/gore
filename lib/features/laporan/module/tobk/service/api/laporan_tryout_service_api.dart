@@ -8,7 +8,9 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class LaporanTryoutServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<dynamic> fetchLaporanTryout({
     required String noRegistrasi,
@@ -26,26 +28,15 @@ class LaporanTryoutServiceAPI {
       logger.log('LAPORAN_TRYOUT_SERVICE-FetchLaporanTryout: idJurusan 2 '
           '>> $idJurusanPilihan2');
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/tryout/laporan/tryout',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'idSekolahKelas': idSekolahKelas,
-        'jenisTO': jenisTO,
-        'jenis': userType,
-        'pilihan1': idJurusanPilihan1,
-        'pilihan2': idJurusanPilihan2
-      },
+    final response = await _apiHelper.dio.get(
+       '/tryout/laporan/tryout',
     );
 
-    if (kDebugMode) {
-      logger.log('LAPORAN_TRYOUT_SERVICE-FetchLaporanTryout: Response '
-          '>> $response');
+   if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchLaporanListTryout({
@@ -57,25 +48,14 @@ class LaporanTryoutServiceAPI {
     if (kDebugMode) {
       logger.log("LAPORAN TRYOUT SERVICE: execute fetchLaporanTryout()");
     }
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/tryout/laporan/list',
-      bodyParams: {
-        "nis": userId,
-        "idSekolahKelas": userClassLevelId,
-        "jenisTO": jenisTO,
-        "jenis": jenis,
-      },
+    final response = await _apiHelper.dio.get(
+      '/tryout/laporan/list',
     );
-    if (kDebugMode) {
-      logger.log("response['data'] $response");
-      logger.log("$userId $userClassLevelId $jenisTO $jenis");
-    }
-    if (kDebugMode) {
-      logger.log("BodyParams : $userId $userClassLevelId $jenisTO");
-      logger.log("Response Laporan TO : $response");
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchLaporanNilai(
@@ -86,44 +66,33 @@ class LaporanTryoutServiceAPI {
       required String penilaian,
       required String pilihan1,
       required String pilihan2}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/tryout/laporan/nilai',
-      bodyParams: {
-        'nis': userId,
-        'idSekolahKelas': userClassLevelId,
-        'jenis': userType,
-        'kodeTOB': kodeTOB,
-        'penilaian': penilaian,
-        'pilihan1': pilihan1,
-        'pilihan2': pilihan2,
-      },
+    final response = await _apiHelper.dio.get(
+      '/tryout/laporan/nilai',
     );
 
-    if (kDebugMode) {
-      logger.log("Response fetchLaporanNilai : $response");
-      logger.log(
-          "bodyParamss : $userId $userClassLevelId $userType $kodeTOB $penilaian $pilihan1 $pilihan2");
+   if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<void> uploadFeed(
       {String? userId, String? content, String? file64}) async {
-    final response = await _apiHelper.requestPost(
-        pathUrl: '/upload/feed',
-        bodyParams: {"nis": userId, "text": content, "file64": file64});
-    if (!response['status']) throw DataException(message: response['message']);
+    final response = await _apiHelper.dio.post(
+       '/upload/feed',
+        data: {"nis": userId, "text": content, "file64": file64});
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   // Request token key to get url video stream.
   Future<dynamic> fetchEpbToken() async {
-    final Response response = await _apiHelper.requestPatch(
-      requestType: RequestType.epb,
-    );
+    final response = await _apiHelper.dio.get('');
     if (kDebugMode) {
       logger.log("cek nilai : $response");
     }
-    Map<String, dynamic> data = jsonDecode(response.body);
+    Map<String, dynamic> data = jsonDecode(response.data.body);
     return data['message'];
   }
 }

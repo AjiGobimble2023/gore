@@ -7,72 +7,75 @@ import '../../../../core/helper/api_helper.dart';
 import '../../../../core/util/app_exceptions.dart';
 
 class DataServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<dynamic> fetchAbout() async {
-    final response = await _apiHelper.requestPost(pathUrl: '/about');
+    final response = await _apiHelper.dio.get( '/about');
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+     if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 
   Future<dynamic> fetchAturanSiswa({
     required String noRegistrasi,
     required String tipeUser,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/aturan',
-      bodyParams: {
-        'noRegistrasi': noRegistrasi,
-        'siapa': tipeUser,
-      },
+    final response = await _apiHelper.dio.get('/aturan'
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+  if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
+    return response.data['data'];
   }
 
   Future<dynamic> setAturanSiswa({
     required String noRegistrasi,
     required String tipeUser,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/aturan/simpan',
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+      '/aturan/simpan',
+      data: {
         'noRegistrasi': noRegistrasi,
         'siapa': tipeUser,
       },
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchKelompokUjianPilihan(
       {required String noRegistrasi}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/tryout/getmapelpilihan',
-      bodyParams: {'nis': noRegistrasi},
+    final response = await _apiHelper.dio.get(
+      '/tryout/getmapelpilihan',
     );
 
-    if (!response['status']) throw DataException(message: response['message']);
+     if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchListKelompokUjianPilihan(
       {required String tingkatSekolah}) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/kelompokUjian',
-      bodyParams: {'TingkatSekolah': tingkatSekolah},
+    final response = await _apiHelper.dio.get(
+      '/kelompokUjian/$tingkatSekolah'
     );
 
-    // if (response['meta']['massage'] != 'Berhasil') throw DataException(message: response['message']);
+   if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> setKelompokUjianPilihan({
@@ -80,15 +83,15 @@ class DataServiceAPI {
     required List<String> daftarIdKelompokUjian,
   }) async {
     try {
-      final response = await _apiHelper.requestPost(
-        pathUrl: '/tryout/simpanmapelpilihan',
-        bodyParams: {
+      final response = await _apiHelper.dio.post(
+      '/tryout/simpanmapelpilihan',
+       data: {
           'nis': noRegistrasi,
           'idmapeluji': daftarIdKelompokUjian,
         },
       );
 
-      return (response['status'] is bool) ? response['status'] : false;
+      return (response.data['meta']['code'] == 200);
     } catch (e) {
       if (kDebugMode) {
         logger.log('FatalException-SetKelompokUjianPilihan: $e');
@@ -101,12 +104,8 @@ class DataServiceAPI {
     required String nomorHp,
     required String noRegistrasi,
   }) async {
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/auth/delete',
-      bodyParams: {
-        'nomorHp': nomorHp,
-        'noRegistrasi': noRegistrasi,
-      },
+    final response = await _apiHelper.dio.delete(
+       '/auth/delete/$noRegistrasi'
     );
 
     return response;

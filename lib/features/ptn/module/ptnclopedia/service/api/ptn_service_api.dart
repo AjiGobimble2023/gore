@@ -2,18 +2,17 @@ import 'dart:developer' as logger show log;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-
-import '../../../../../../../core/helper/api_helper.dart';
 import '../../../../../../../core/util/app_exceptions.dart';
 
 class PtnServiceApi {
-  final ApiHelper _apiHelper = ApiHelper();
   final dio = Dio();
+  final url = 'https://ptn-service.gobimbelonline.net';
 
   Future<dynamic> fetchUniversitas() async {
     try {
-      final response =
-          await Dio().get('http://192.168.20.250:4005/api/v1/universitas');
+      // final response =
+      //     await Dio().get('http://192.168.20.250:4005/api/v1/universitas');
+      final response = await Dio().get('${url}/api/v1/universitas');
       return response.data['data'];
     } catch (error) {
       throw error;
@@ -24,8 +23,10 @@ class PtnServiceApi {
     required int idPtn,
   }) async {
     try {
-      final response = await Dio()
-          .get('http://192.168.20.250:4005/api/v1/universitas/${idPtn}');
+      print('kkk${idPtn}');
+      // final response = await Dio()
+      //     .get('http://192.168.20.250:4005/api/v1/universitas/${idPtn}');
+      final response = await Dio().get('${url}/api/v1/universitas/${idPtn}');
       return response.data['data'];
     } catch (error) {
       throw error;
@@ -41,8 +42,11 @@ class PtnServiceApi {
     }
 
     try {
-      final response = await Dio().get(
-          'http://192.168.20.250:4005/api/v1/universitas/jurusan//${idJurusan}');
+      // final response = await Dio().get(
+      //     'http://192.168.20.250:4005/api/v1/universitas/jurusan/${idJurusan}');
+      final response =
+          await Dio().get('${url}/api/v1/universitas/jurusan/${idJurusan}');
+      print(response);
       return response.data['data'];
     } catch (error) {
       throw error;
@@ -57,8 +61,10 @@ class PtnServiceApi {
           'PTN_SERVICE_API-FetchKampusImpianPilihan: START with params($noRegistrasi)');
     }
 
-    final response = await Dio().get(
-        'http://192.168.20.250:4005/api/v1/universitas/jurusan/${noRegistrasi}');
+    // final response = await Dio().get(
+    //     'http://192.168.20.250:4005/api/v1/db-ptn/ptn-pilihan/${noRegistrasi}');
+    final response =
+        await Dio().get('${url}/api/v1/db-ptn/ptn-pilihan/${noRegistrasi}');
 
     if (kDebugMode) {
       logger.log(

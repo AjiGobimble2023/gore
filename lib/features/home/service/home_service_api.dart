@@ -4,7 +4,8 @@ import '../../../core/helper/api_helper.dart';
 import '../../../core/util/app_exceptions.dart';
 
 class HomeServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper =
+      ApiHelper(baseUrl: 'https://data-service.gobimbelonline.net');
 
   static final HomeServiceAPI _instance = HomeServiceAPI._internal();
 
@@ -13,25 +14,20 @@ class HomeServiceAPI {
   HomeServiceAPI._internal();
 
   Future<dynamic> fetchVersion() async {
-    final response = await _apiHelper.requestPost(
-      jwt: false,
-      pathUrl: '/version',
-    );
+    final response = await _apiHelper.dio.get('/version');
 
-    if (!response['status']) throw DataException(message: 'Tidak ada update');
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: 'Tidak ada update');
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchCarousel() async {
     try {
-      // Buat instance Dio
-      Dio dio = Dio();
-      final response =
-          await dio.get('http://192.168.20.250:4002/api/v1/data/carousel');
+      final response = await _apiHelper.dio.get('/api/v1/data/carousel');
       return response.data['data'];
     } catch (e) {
-      // Tangani kesalahan jika terjadi
       throw Exception('Terjadi kesalahan: $e');
     }
   }

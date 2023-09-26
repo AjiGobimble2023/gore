@@ -6,7 +6,9 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class LaporanServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   Future<dynamic> fetchLaporanVak({
     required String noRegistrasi,
@@ -17,9 +19,9 @@ class LaporanServiceAPI {
           'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: START with params($noRegistrasi, $userType)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/vak',
-      bodyParams: {'nis': noRegistrasi, 'jenis': userType},
+    final response = await _apiHelper.dio.get(
+      '/vak',
+  
     );
 
     if (kDebugMode) {
@@ -27,10 +29,9 @@ class LaporanServiceAPI {
           'LAPORAN_VAK_SERVICE_API-FetchLaporanVak: response >> $response');
     }
 
-    if (response['meta']['code'] != 200 &&
-        !response['meta']['message'].contains('belum mengerjakan')) {
-      throw DataException(message: response['message']);
+   if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
-    return response['data'];
+    return response.data['data'];
   }
 }

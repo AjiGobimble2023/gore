@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gokreasi_new/features/home/presentation/bloc/data/data_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart'
     show FlutterNativeSplash;
+import './core/util/injector.dart' as di;
 
 import 'core/config/route.dart';
 import 'core/config/theme.dart';
@@ -116,6 +119,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    di.init();
     gNavigatorKey = _navigatorKey;
     // if (gPayload.isNotEmpty) {
     //   _notificationService.bukaScreen();
@@ -228,6 +232,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<AuthOtpProvider>(
           create: (_) => AuthOtpProvider(),
         ),
+        BlocProvider<DataBloc>(create: (context) => di.locator<DataBloc>()),
       ],
       child: MaterialApp(
         title: 'GO Kreasi',

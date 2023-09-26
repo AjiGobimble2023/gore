@@ -8,7 +8,9 @@ import '../../../../../../core/helper/api_helper.dart';
 import '../../../../../../core/util/app_exceptions.dart';
 
 class SimulasiServiceAPI {
-  final ApiHelper _apiHelper = ApiHelper();
+  final ApiHelper _apiHelper = ApiHelper(
+    baseUrl: ''
+  );
 
   /// [fetchNilai] is used to fetch the student's score.
   ///
@@ -27,19 +29,19 @@ class SimulasiServiceAPI {
           'SIMULASI_SERVICE_API-FetchNilai: START with params($noRegistrasi)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/simulasi/nilai',
-      bodyParams: {
+    final response = await _apiHelper.dio.get(
+      '/simulasi/nilai',
+      data: {
         'nis': noRegistrasi,
         'idSekolahKelas': idSekolahKelas,
       },
     );
 
-    if (kDebugMode) {
-      logger.log('SIMULASI_SERVICE_API-FetchNilai: Response >> $response');
+     if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   /// [fetchPilihan] is used to fetch the data of the selected college.
@@ -57,18 +59,15 @@ class SimulasiServiceAPI {
           'SIMULASI_SERVICE_API-FetchPilihan: START with params($noRegistrasi)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/simulasi/pilihan',
-      bodyParams: {'nis': noRegistrasi},
+    final response = await _apiHelper.dio.get('/simulasi/pilihan',
     );
 
-    if (kDebugMode) {
-      logger.log('SIMULASI_SERVICE_API-FetchPilihan: Response >> $response');
+
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
-
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchUniversitas({
@@ -79,11 +78,8 @@ class SimulasiServiceAPI {
           'params($idSekolahKelas)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/simulasi/pilihan/universitas',
-      bodyParams: {
-        'idSekolahKelas': idSekolahKelas,
-      },
+    final response = await _apiHelper.dio.get(
+      '/simulasi/pilihan/universitas',
     );
 
     if (kDebugMode) {
@@ -91,9 +87,11 @@ class SimulasiServiceAPI {
           .log('SIMULASI_SERVICE_API-FetchUniversitas: Response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+     if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<dynamic> fetchSimulasi({
@@ -105,19 +103,15 @@ class SimulasiServiceAPI {
           'SIMULASI_SERVICE_API-FetchSimulasi: START with params($noRegistrasi, $userType)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/simulasi/hasil',
-      bodyParams: {
-        'nis': noRegistrasi,
-        'jenis': userType,
-      },
+    final response = await _apiHelper.dio.get(
+      '/simulasi/hasil',
     );
 
     if (kDebugMode) {
       logger.log('SIMULASI_SERVICE_API-FetchSimulasi: Response >> $response');
     }
 
-    return response['data'];
+    return response.data['data'];
   }
 
   Future<void> setNilai({
@@ -131,21 +125,23 @@ class SimulasiServiceAPI {
           'params($noRegistrasi, $kodeTOB, $status, $listNilai)');
     }
 
-    final response = await _apiHelper.requestPost(
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+     '/simulasi/nilai/simpan',
+      data: {
         'nis': noRegistrasi,
         'kodeTob': kodeTOB,
         'detailNilai': listNilai,
         'status': status,
       },
-      pathUrl: '/simulasi/nilai/simpan',
     );
 
     if (kDebugMode) {
       logger.log('SIMULASI_SERVICE_API-SetNilai: Response >> $response');
     }
 
-    if (!response['status']) throw DataException(message: response['message']);
+    if (response.data['meta']['code'] != 200) {
+      throw DataException(message: response.data['meta']['message']);
+    }
   }
 
   Future<void> setPilihan({
@@ -159,9 +155,9 @@ class SimulasiServiceAPI {
           'params($noRegistrasi, $prioritas, $status, $idJurusan)');
     }
 
-    final response = await _apiHelper.requestPost(
-      pathUrl: '/simulasi/pilihan/simpan',
-      bodyParams: {
+    final response = await _apiHelper.dio.post(
+      '/simulasi/pilihan/simpan',
+      data: {
         'noregistrasi': noRegistrasi,
         'prioritas': prioritas,
         'status': status,
@@ -169,17 +165,15 @@ class SimulasiServiceAPI {
       },
     );
 
-    if (kDebugMode) {
-      logger.log('SIMULASI_SERVICE_API-SetPilihan: Response >> $response');
-    }
-
-    if (response['status']) {
+   
+    if (response.data['meta']['code'] != 200) {
       gShowTopFlash(
           gNavigatorKey.currentState!.context, 'Data pilihan berhasil disimpan',
           dialogType: DialogType.success);
     } else {
       gShowBottomDialogInfo(gNavigatorKey.currentState!.context,
-          title: 'Set Pilihan PTN', message: response['message']);
+          title: 'Set Pilihan PTN', message: response.data['meta']['message']);
     }
+     
   }
 }
